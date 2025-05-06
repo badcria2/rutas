@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorando Rutas Seguras en Lima</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/ccF1aLNczX+zCNj/IliVM=="
+          crossorigin=""/>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Explorando Rutas Seguras en Lima</h1>
+        <div class="input-container">
+            <label for="origen">Origen:</label>
+            <input type="text" id="origen" placeholder="Ingrese el punto de inicio">
+        </div>
+        <div class="input-container">
+            <label for="destino">Destino:</label>
+            <input type="text" id="destino" placeholder="Ingrese el punto de destino">
+        </div>
+        <button id="buscarRuta">Buscar Ruta Segura</button>
+        <div id="map"></div>
+        <div id="info-ruta">
+            <h2>Ruta Recomendada:</h2>
+            <ul id="pasos-ruta"></ul>
+            <div id="detalles-seguridad"></div>
+        </div>
+        <div id="reporte-incidente" style="display: none;">
+            <h2>Reportar Incidente</h2>
+            <textarea id="descripcion-incidente" placeholder="Descripción del incidente"></textarea>
+            <button id="enviar-reporte">Enviar Reporte</button>
+        </div>
+        <button id="boton-reportar">Reportar Incidente</button>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+            integrity="sha512-XQoYMMe3lbHZqvPTTnFFzjGmJMLgObObvS-KtdCNGxYoaLX5zYwiLgCzv6cvDmFHfWaPiHx/MHLDno96ynGA=="
+            crossorigin=""></script>
+    <script src="script.js"></script>
+</body>
+</html>
