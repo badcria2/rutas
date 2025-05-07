@@ -6,8 +6,8 @@
 // Módulo de API con patrón revelador
 const API = (function() {
     // Base URL con puerto específico
-    const BASE_URL = 'http://localhost:3000'; // Cambia esto según tu configuración
-    
+    //const BASE_URL = 'http://localhost:3000'; // Cambia esto según tu configuración
+    const BASE_URL = 'https://rutas-rywi.onrender.com';
     /**
      * Obtiene datos de los distritos desde la API
      * @returns {Promise} - Promesa con los datos de distritos
