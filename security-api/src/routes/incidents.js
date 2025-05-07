@@ -32,7 +32,7 @@ router.get('/type/:type', incidentController.getIncidentsByType);
  * @desc    Obtener incidentes por fecha específica (YYYY-MM-DD)
  * @access  Public
  */
-router.get('/date/:date', incidentController.getIncidentsByDate);
+//router.get('/date/:date', incidentController.getIncidentsByDate);
 
 /**
  * @route   GET /api/incidents/date-range
@@ -46,14 +46,14 @@ router.get('/date-range', incidentController.getIncidentsByDateRange);
  * @desc    Obtener incidentes cercanos a una ubicación (necesita lat y lng en query)
  * @access  Public
  */
-router.get('/nearby', incidentController.getNearbyIncidents);
+//router.get('/nearby', incidentController.getNearbyIncidents);
 
 /**
  * @route   POST /api/incidents
  * @desc    Reportar un nuevo incidente
  * @access  Public
  */
-router.post('/', incidentController.reportIncident);
+//router.post('/', incidentController.reportIncident);
 
 /**
  * @route   PUT /api/incidents/:id
@@ -74,13 +74,13 @@ router.delete('/:id', incidentController.deleteIncident);
  * @desc    Obtener estadísticas semanales de incidentes
  * @access  Public
  */
-router.get('/stats/weekly', incidentController.getWeeklyIncidentStats);
+//router.get('/stats/weekly', incidentController.getWeeklyIncidentStats);
 
 /**
  * @route   GET /api/incidents/stats/by-district
  * @desc    Obtener estadísticas de incidentes por distrito
  * @access  Public
  */
-router.get('/stats/by-district', incidentController.getIncidentStatsByDistrict);
+//router.get('/stats/by-district', incidentController.getIncidentStatsByDistrict);
 
 module.exports = router;

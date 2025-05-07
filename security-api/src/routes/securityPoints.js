@@ -32,14 +32,14 @@ router.get('/type/:type', securityPointController.getSecurityPointsByType);
  * @desc    Obtener puntos de seguridad por nivel (high, medium, low)
  * @access  Public
  */
-router.get('/level/:level', securityPointController.getSecurityPointsByLevel);
+//router.get('/level/:level', securityPointController.getSecurityPointsByLevel);
 
 /**
  * @route   GET /api/security-points/nearby
  * @desc    Obtener puntos de seguridad cercanos a una ubicación
  * @access  Public
  */
-router.get('/nearby', securityPointController.getNearbySecurityPoints);
+//router.get('/nearby', securityPointController.getNearbySecurityPoints);
 
 /**
  * @route   POST /api/security-points
