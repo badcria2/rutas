@@ -28,6 +28,16 @@ CREATE TABLE IF NOT EXISTS incidents (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Tabla de rutas favoritas
+CREATE TABLE IF NOT EXISTS favorite_routes (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER,  -- Clave foránea a una tabla de usuarios (opcional por ahora)
+    route_name VARCHAR(255) NOT NULL,
+    route_data TEXT NOT NULL -- Puedes usar JSONB si tu base de datos lo soporta
+    -- Si se implementa usuarios:
+    -- FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 -- Poblar datos iniciales
 -- Distritos
 INSERT INTO districts (name, security_level, latitude, longitude) VALUES

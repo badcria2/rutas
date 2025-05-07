@@ -18,6 +18,15 @@ function initMap() {
   
     // Crear el mapa y configurar la vista
 
+    /**
+ * Muestra u oculta el botón de favoritos.
+ * @param {boolean} show - Si true, muestra el botón; si false, lo oculta.
+ */
+function toggleFavoriteButton(show) {
+    const favoriteButton = document.getElementById('add-to-favorites-btn');
+    favoriteButton.style.display = show ? 'block' : 'none';
+}
+
     map = L.map('map').setView(LIMA_CENTER, DEFAULT_ZOOM);
     
     // Añadir capa de OpenStreetMap
@@ -73,6 +82,29 @@ function setupEventListeners() {
 }
 
 /**
+ * Muestra las rutas favoritas en la lista.
+ * @param {Array} routes - Array de objetos de ruta.
+ */
+function displayFavoriteRoutes(routes) {
+    const favoritesList = document.getElementById('favorite-routes-list');
+    favoritesList.innerHTML = '';
+
+    if (routes.length === 0) {
+        favoritesList.innerHTML = '<p>No hay rutas favoritas guardadas.</p>';
+        return;
+    }
+
+    routes.forEach(route => {
+        const routeItem = document.createElement('div');
+        routeItem.classList.add('favorite-route-item');
+        routeItem.innerHTML = `
+            <p><strong>Nombre:</strong> ${route.routeName}</p>
+        `;
+        favoritesList.appendChild(routeItem);
+    });
+}
+
+/**
  * Actualiza la información de la ruta en el panel lateral
  * @param {Object} route - Objeto con la información de la ruta
  */
@@ -119,6 +151,8 @@ function findSecureRoute(origin, destination) {
     // Mostrar indicador de carga
     document.getElementById('loading').style.display = 'block';
     
+    toggleFavoriteButton(true);
+
     // Simulamos un tiempo de carga para simular la consulta a la base de datos
     setTimeout(() => {
         // Función que simula el geocoding para obtener coordenadas
@@ -155,7 +189,7 @@ function findSecureRoute(origin, destination) {
         // Mostrar panel de información de ruta
         document.getElementById('route-info').style.display = 'block';
     }, 1500); // Simular tiempo de carga de 1.5 segundos
-}
+
 function mockGeocode(placeName) {
     // Esta función simula el proceso de geocodificación
     // En una aplicación real, esto se haría con una API de geocodificación

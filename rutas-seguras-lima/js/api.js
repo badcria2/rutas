@@ -14,6 +14,7 @@ const API = (function() {
      */
     async function fetchDistricts() {
         try {
+
             console.log('Obteniendo datos de distritos desde:', `${BASE_URL}/api/districts`);
             const response = await fetch(`${BASE_URL}/api/districts`);
             if (!response.ok) {
@@ -133,6 +134,56 @@ const API = (function() {
         }
     }
 
+    /**
+     * Agrega una ruta a favoritos
+     * @param {Object} routeData - Datos de la ruta a agregar
+     * @returns {Promise} - Promesa con la respuesta del servidor
+     */
+    async function addFavoriteRoute(routeData) {
+        try {
+            console.log('Agregando ruta a favoritos:', routeData);
+            const response = await fetch(`${BASE_URL}/api/favorites`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(routeData)
+            });
+            if (!response.ok) {
+                throw new Error(`Error al agregar ruta a favoritos: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error al agregar ruta a favoritos:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Obtiene la lista de rutas favoritas
+     * @returns {Promise} - Promesa con la lista de rutas favoritas
+     */
+    async function getFavoriteRoutes() {
+        try {
+            console.log('Obteniendo rutas favoritas');
+            const response = await fetch(`${BASE_URL}/api/favorites`);
+            if (!response.ok) {
+                throw new Error(`Error al obtener rutas favoritas: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error al obtener rutas favoritas:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Elimina una ruta favorita
+     * @param {number} routeId - ID de la ruta a eliminar
+     * @returns {Promise} - Promesa con la respuesta del servidor
+     */
+
+    
     // Método para cambiar la URL base (útil para cambiar entre entornos)
     function setBaseUrl(newUrl) {
         if (typeof newUrl === 'string' && newUrl.trim() !== '') {
@@ -161,6 +212,22 @@ const API = (function() {
         }
     }
 
+    async function deleteFavoriteRoute(routeId) {
+        try {
+            console.log(`Eliminando ruta favorita con ID: ${routeId}`);
+            const response = await fetch(`${BASE_URL}/api/favorites/${routeId}`, {
+                method: 'DELETE'
+            });
+            if (!response.ok) {
+                throw new Error(`Error al eliminar ruta favorita: ${response.status}`);
+            }
+            return await response.json();
+        } catch (error) {
+            console.error('Error al eliminar ruta favorita:', error);
+            throw error;
+        }
+    }
+
     // Exponer API pública
     return {
         fetchDistricts,
@@ -169,7 +236,10 @@ const API = (function() {
         initializeSecurityData,
         setBaseUrl,
         testConnection,
-        getBaseUrl: () => BASE_URL
+        getBaseUrl: () => BASE_URL,
+        addFavoriteRoute,
+        getFavoriteRoutes,
+        deleteFavoriteRoute
     };
 })();
 

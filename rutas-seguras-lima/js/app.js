@@ -237,6 +237,34 @@ const App = (function() {
         } catch (error) {
             handleError(error, 'Error al configurar los eventos');
         }
+
+        try {
+             // Evento para cargar y mostrar rutas favoritas al cargar la página
+             document.addEventListener('DOMContentLoaded', () => {
+                API.getFavoriteRoutes()
+                    .then(routes => {
+                        UI.displayFavoriteRoutes(routes);
+                    })
+                    .catch(error => {
+                        handleError(error, 'Error al cargar las rutas favoritas.');
+                    });
+            });
+
+             // Evento para añadir ruta a favoritos
+            const addToFavoritesBtn = document.getElementById('add-to-favorites-btn');
+            addToFavoritesBtn.addEventListener('click', () => {
+                const currentRoute = Routes.getCurrentRoute(); // Asegúrate de tener un método para obtener la ruta actual en Routes
+                API.addFavoriteRoute(currentRoute)
+                    .then(() => {
+                        return API.getFavoriteRoutes();
+                    })
+                    .then(routes => {
+                        UI.displayFavoriteRoutes(routes);
+                    });
+            });
+        } catch (error) {
+            handleError(error, 'Error al configurar los eventos');
+        }
     }
     
     /**

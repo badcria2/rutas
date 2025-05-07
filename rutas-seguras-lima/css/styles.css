@@ -233,3 +233,21 @@ button:hover {
     font-size: 16px;
     text-align: center;
 }
+
+#add-to-favorites-btn {
+    margin-top: 10px;
+    background-color: #4CAF50; /* Green */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: none; /* Hidden by default */
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+#favorite-routes-list {
+    margin-top: 20px;
+}

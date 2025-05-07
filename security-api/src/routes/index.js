@@ -6,6 +6,7 @@ const express = require('express');
 const districtRoutes = require('./districts');
 const securityPointRoutes = require('./securityPoints');
 const incidentRoutes = require('./incidents');
+const favoriteRoutes = require('./favorites');
 
 const router = express.Router();
 
@@ -22,5 +23,6 @@ router.get('/', (req, res) => {
 router.use('/districts', districtRoutes);
 router.use('/security-points', securityPointRoutes);
 router.use('/incidents', incidentRoutes);
+router.use('/favorites', favoriteRoutes);
 
 module.exports = router;
