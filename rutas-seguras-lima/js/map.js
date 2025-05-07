@@ -5,6 +5,10 @@
 // Variables globales del mapa
 let map, originMarker, destinationMarker, routeLayer;
 
+// Coordenadas y zoom por defecto (Lima)
+const LIMA_CENTER = [-12.0464, -77.0428];
+const DEFAULT_ZOOM = 12;
+
 /**
  * Inicializa el mapa de Leaflet
  */
@@ -19,6 +23,8 @@ function initMap() {
     
     // Añadir leyenda al mapa
     addMapLegend();
+    
+    console.log('Mapa inicializado correctamente');
 }
 
 /**
@@ -56,15 +62,25 @@ function addMapLegend() {
 
 /**
  * Carga los puntos de seguridad e incidentes en el mapa
+ * @param {Object} securityData - Datos de seguridad (puntos e incidentes)
  */
-function loadSecurityPoints() {
+function loadSecurityPoints(securityData) {
+    // Validar que tengamos datos de seguridad
+    if (!securityData || !securityData.securityPoints || !securityData.incidents) {
+        console.error('Datos de seguridad no disponibles para el mapa');
+        return;
+    }
+    
+    console.log('Cargando puntos de seguridad en el mapa:', securityData.securityPoints.data.length);
+    console.log('Cargando incidentes en el mapa:', securityData.incidents.data.length);
+    
     // Cargar puntos de seguridad
-    securityData.securityPoints.forEach(point => {
+    securityData.securityPoints.data.forEach(point => {
         let markerColor;
         let markerIcon;
         
         // Determinar color según el nivel de seguridad
-        switch (point.securityLevel) {
+        switch (point.security_level) {
             case 'high':
                 markerColor = '#27ae60';
                 break;
@@ -74,6 +90,8 @@ function loadSecurityPoints() {
             case 'low':
                 markerColor = '#e74c3c';
                 break;
+            default:
+                markerColor = '#3498db';
         }
         
         // Determinar icono según el tipo
@@ -101,7 +119,7 @@ function loadSecurityPoints() {
         }
         
         // Crear marcador con popup
-        const marker = L.marker([point.lat, point.lng]).addTo(map);
+        const marker = L.marker([point.latitude, point.longitude]).addTo(map);
         
         marker.bindPopup(`
             <div class="marker-popup">
@@ -115,8 +133,8 @@ function loadSecurityPoints() {
     });
     
     // Cargar incidentes
-    securityData.incidents.forEach(incident => {
-        const marker = L.circle([incident.lat, incident.lng], {
+    securityData.incidents.data.forEach(incident => {
+        const marker = L.circle([incident.latitude, incident.longitude], {
             color: '#e74c3c',
             fillColor: '#e74c3c',
             fillOpacity: 0.5,

@@ -141,10 +141,7 @@ const securityData = {
     ]
 };
 
-// Coordenadas de Lima, Perú
-const LIMA_CENTER = [-12.0464, -77.0428];
-const DEFAULT_ZOOM = 12;
-
+ 
 // Mapa simulado de lugares a coordenadas para geocodificación
 const placeCoordinates = {
     'miraflores': [-12.1219, -77.0297],

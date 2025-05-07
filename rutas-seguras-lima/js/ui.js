@@ -15,7 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
  * Inicializa el mapa de Leaflet
  */
 function initMap() {
+  
     // Crear el mapa y configurar la vista
+
     map = L.map('map').setView(LIMA_CENTER, DEFAULT_ZOOM);
     
     // Añadir capa de OpenStreetMap

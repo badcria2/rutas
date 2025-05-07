@@ -6,7 +6,7 @@
 }
 
 body {
-    background-color: #f5f5f5;
+    background-color: #f0f2f5;
     color: #333;
 }
 
@@ -17,22 +17,23 @@ body {
 }
 
 header {
-    background-color: #2c3e50;
+    background-color: #1e2a38;
     color: white;
-    padding: 20px 0;
+    padding: 25px 0;
     text-align: center;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 header h1 {
-    font-size: 2rem;
-    margin-bottom: 5px;
+    font-size: 2.2rem;
+    margin-bottom: 6px;
 }
 
 header p {
-    opacity: 0.8;
+    font-size: 1rem;
+    opacity: 0.85;
 }
 
 .content {
@@ -49,18 +50,19 @@ header p {
 
 .sidebar {
     background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     flex: 1;
 }
 
 .map-container {
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     flex: 2;
     height: 500px;
+    position: relative;
 }
 
 #map {
@@ -69,30 +71,37 @@ header p {
 }
 
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 18px;
 }
 
 label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
     font-weight: 600;
+    font-size: 14px;
 }
 
 input[type="text"] {
     width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 16px;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus {
+    outline: none;
+    border-color: #3498db;
 }
 
 button {
-    background-color: #2980b9;
+    background-color: #2d89ef;
     color: white;
     border: none;
-    padding: 12px 20px;
+    padding: 12px;
     font-size: 16px;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
     transition: background-color 0.3s;
     width: 100%;
@@ -100,28 +109,34 @@ button {
 }
 
 button:hover {
-    background-color: #3498db;
+    background-color: #4aabf5;
 }
 
 .route-info {
-    margin-top: 20px;
-    padding: 15px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-    border-left: 4px solid #2980b9;
+    margin-top: 25px;
+    padding: 18px;
+    background-color: #fefefe;
+    border-radius: 8px;
+    border-left: 4px solid #2d89ef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.route-info h3 {
+    margin-bottom: 10px;
 }
 
 .security-level {
     display: flex;
     align-items: center;
     margin-bottom: 10px;
+    font-size: 14px;
 }
 
 .security-level-bar {
     flex: 1;
-    height: 8px;
+    height: 10px;
     background-color: #ecf0f1;
-    border-radius: 4px;
+    border-radius: 5px;
     margin: 0 10px;
     position: relative;
     overflow: hidden;
@@ -133,25 +148,27 @@ button:hover {
     left: 0;
     height: 100%;
     background-color: #27ae60;
-    border-radius: 4px;
+    border-radius: 5px;
+    width: 80%; /* puedes animarlo desde JS */
+    transition: width 0.5s ease;
 }
 
 .legend {
     margin-top: 20px;
     padding: 10px;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.9);
     border-radius: 4px;
 }
 
 .legend-item {
     display: flex;
     align-items: center;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
 }
 
 .legend-color {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
     margin-right: 10px;
 }
@@ -188,10 +205,12 @@ button:hover {
     margin-top: 15px;
     max-height: 150px;
     overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
 }
 
 .incident-item {
-    padding: 8px;
+    padding: 10px;
     border-bottom: 1px solid #eee;
     font-size: 14px;
 }
@@ -205,10 +224,12 @@ button:hover {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.75);
     color: white;
-    padding: 20px;
+    padding: 20px 30px;
     border-radius: 8px;
     z-index: 1000;
     display: none;
+    font-size: 16px;
+    text-align: center;
 }

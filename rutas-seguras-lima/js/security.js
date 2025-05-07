@@ -7,7 +7,11 @@
 // Módulo de seguridad con patrón revelador
 const Security = (function() {
     // Variables privadas
-    let securityData = null;  // Datos de seguridad (distritos, puntos, incidentes)
+    let securityData = {
+        districts: {},
+        securityPoints: [],
+        incidents: []
+    };  // Datos de seguridad (distritos, puntos, incidentes)
     
     /**
      * Inicializa el módulo de seguridad con los datos necesarios
@@ -15,7 +19,7 @@ const Security = (function() {
      */
     function init(data) {
         securityData = data;
-        console.log('Módulo de seguridad inicializado');
+        console.log('Módulo de seguridad inicializado con datos:', data);
     }
     
     /**
@@ -25,8 +29,8 @@ const Security = (function() {
      */
     function calculateRouteSecurityLevel(path) {
         // Validar que tengamos datos de seguridad
-        if (!securityData || !securityData.districts) {
-            console.warn('Datos de seguridad no disponibles');
+        if (!securityData || !securityData.districts || Object.keys(securityData.districts).length === 0) {
+            console.warn('Datos de seguridad de distritos no disponibles');
             return 50; // Valor predeterminado si no hay datos
         }
         
@@ -37,7 +41,7 @@ const Security = (function() {
         path.forEach(point => {
             const district = findNearestDistrict(point);
             if (district && securityData.districts[district]) {
-                totalSecurity += securityData.districts[district];
+                totalSecurity += securityData.districts[district].securityLevel;
                 districtsCount++;
             }
         });
@@ -55,42 +59,22 @@ const Security = (function() {
      */
     function findNearestDistrict(point) {
         // Validar que tengamos datos de distritos
-        if (!securityData || !securityData.districts) {
+        if (!securityData || !securityData.districts || Object.keys(securityData.districts).length === 0) {
             return null;
         }
-        
-        // Coordenadas aproximadas de los centros de los distritos
-        const districtCenters = {
-            'Miraflores': [-12.1219, -77.0297],
-            'San Isidro': [-12.0977, -77.0365],
-            'Surco': [-12.1450, -76.9917],
-            'Barranco': [-12.1495, -77.0219],
-            'San Borja': [-12.1019, -76.9975],
-            'La Molina': [-12.0867, -76.9055],
-            'Jesús María': [-12.0705, -77.0517],
-            'Lince': [-12.0833, -77.0333],
-            'San Miguel': [-12.0789, -77.0825],
-            'Magdalena': [-12.0889, -77.0717],
-            'Pueblo Libre': [-12.0717, -77.0633],
-            'Lima Centro': [-12.0464, -77.0428],
-            'Rimac': [-12.0292, -77.0428],
-            'San Juan de Lurigancho': [-12.0031, -77.0081],
-            'Villa El Salvador': [-12.2136, -76.9319],
-            'San Juan de Miraflores': [-12.1550, -76.9700],
-            'La Victoria': [-12.0650, -77.0150],
-            'Ate': [-12.0258, -76.9178],
-            'Callao': [-12.0500, -77.1200]
-        };
         
         let nearestDistrict = null;
         let smallestDistance = Infinity;
         
-        // Encontrar el distrito más cercano
-        for (const [district, center] of Object.entries(districtCenters)) {
-            const distance = Routes.calculateDistance(point, center);
-            if (distance < smallestDistance) {
-                smallestDistance = distance;
-                nearestDistrict = district;
+        // Encontrar el distrito más cercano usando los datos de la API
+        for (const [districtName, districtData] of Object.entries(securityData.districts)) {
+            if (districtData.coordinates) {
+                const districtCenter = [districtData.coordinates.lat, districtData.coordinates.lng];
+                const distance = Routes.calculateDistance(point, districtCenter);
+                if (distance < smallestDistance) {
+                    smallestDistance = distance;
+                    nearestDistrict = districtName;
+                }
             }
         }
         
@@ -105,7 +89,7 @@ const Security = (function() {
      */
     function findNearbyIncidents(path, maxDistance = 1) {
         // Validar que tengamos datos de incidentes
-        if (!securityData || !securityData.incidents) {
+        if (!securityData || !securityData.incidents || securityData.incidents.data.length === 0) {
             console.warn('Datos de incidentes no disponibles');
             return [];
         }
@@ -113,7 +97,7 @@ const Security = (function() {
         const nearbyIncidents = [];
         
         // Para cada incidente, verificar si está cerca de algún punto de la ruta
-        securityData.incidents.forEach(incident => {
+        securityData.incidents.data.forEach(incident => {
             const incidentPoint = [incident.lat, incident.lng];
             
             // Verificar la distancia mínima a cualquier punto de la ruta
@@ -143,7 +127,7 @@ const Security = (function() {
         
         // Obtener nivel de seguridad base del distrito
         let securityLevel = district && securityData.districts[district] 
-            ? securityData.districts[district] 
+            ? securityData.districts[district].securityLevel 
             : 50;
             
         // Buscar puntos de seguridad cercanos que puedan influir
@@ -188,7 +172,7 @@ const Security = (function() {
      * @returns {Array} - Lista de puntos de seguridad cercanos
      */
     function findNearbySecurityPoints(point, maxDistance = 0.5) {
-        if (!securityData || !securityData.securityPoints) {
+        if (!securityData || !securityData.securityPoints || securityData.securityPoints.data.length === 0) {
             return [];
         }
         
@@ -206,7 +190,7 @@ const Security = (function() {
      * @returns {Array} - Lista de incidentes cercanos
      */
     function findNearbyPointIncidents(point, maxDistance = 0.5) {
-        if (!securityData || !securityData.incidents) {
+        if (!securityData || !securityData.incidents || securityData.incidents.data.length === 0) {
             return [];
         }
         
@@ -248,6 +232,32 @@ const Security = (function() {
         return colors[category];
     }
     
+    /**
+     * Actualiza los datos de seguridad (por ejemplo, cuando hay nuevos incidentes)
+     * @param {string} dataType - Tipo de datos a actualizar ('districts', 'securityPoints', 'incidents')
+     * @param {Object|Array} newData - Nuevos datos para actualizar
+     */
+    function updateSecurityData(dataType, newData) {
+        if (!securityData) {
+            securityData = {};
+        }
+        
+        if (dataType === 'districts' || dataType === 'securityPoints' || dataType === 'incidents') {
+            securityData[dataType] = newData;
+            console.log(`Datos de ${dataType} actualizados:`, newData);
+        } else {
+            console.warn(`Tipo de datos desconocido: ${dataType}`);
+        }
+    }
+    
+    /**
+     * Obtiene los datos de seguridad actuales
+     * @returns {Object} - Datos de seguridad actuales
+     */
+    function getSecurityData() {
+        return securityData;
+    }
+    
     // Exponer API pública
     return {
         init,
@@ -255,7 +265,9 @@ const Security = (function() {
         findNearbyIncidents,
         evaluatePointSecurity,
         getSecurityCategory,
-        getSecurityColor
+        getSecurityColor,
+        updateSecurityData,
+        getSecurityData
     };
 })();
 

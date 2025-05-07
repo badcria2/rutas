@@ -320,7 +320,7 @@
             
             // Cargar incidentes desde los datos mockeados
             mockedSecurityData.incidents.forEach(incident => {
-                const marker = L.circle([incident.lat, incident.lng], {
+                const marker = L.circle([incident.latitude, incident.longitude], {
                     color: '#e74c3c',
                     fillColor: '#e74c3c',
                     fillOpacity: 0.5,

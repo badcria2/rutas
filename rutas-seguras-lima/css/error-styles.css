@@ -1,0 +1,120 @@
+/**
+ * error-styles.css
+ * Estilos para mensajes de error en la aplicación Rutas Seguras Lima
+ */
+
+/* Contenedor de errores básico */
+.error-message {
+    background-color: #f8d7da;
+    color: #721c24;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+    border: 1px solid #f5c6cb;
+    font-size: 14px;
+    font-weight: 500;
+    position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+}
+
+/* Icono de error (opcional) */
+.error-message::before {
+    content: "⚠️";
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* Botón de cerrar */
+.error-message .close-btn {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.6;
+}
+
+.error-message .close-btn:hover {
+    opacity: 1;
+}
+
+/* Variantes de errores por severidad */
+.error-warning {
+    background-color: #fff3cd;
+    color: #856404;
+    border-color: #ffeeba;
+}
+
+.error-info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border-color: #bee5eb;
+}
+
+.error-fatal {
+    background-color: #343a40;
+    color: #ffffff;
+    border-color: #212529;
+}
+
+/* Error modal para errores fatales */
+.fatal-error {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #f8d7da;
+    border: 2px solid #dc3545;
+    border-radius: 6px;
+    padding: 20px 30px;
+    text-align: center;
+    z-index: 9999;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.fatal-error h2 {
+    color: #721c24;
+    margin-bottom: 15px;
+}
+
+.fatal-error button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    margin-top: 15px;
+    transition: background-color 0.2s;
+}
+
+.fatal-error button:hover {
+    background-color: #c82333;
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+    20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.error-shake {
+    animation: shake 0.5s;
+}

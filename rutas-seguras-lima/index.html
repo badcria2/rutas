@@ -55,11 +55,21 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-    <script src="js/data.js"></script>
-    <script src="js/map.js"></script>
-    <script src="js/routes.js"></script>
-    <script src="js/security.js"></script>
+    <!-- Incluir módulos de la aplicación EN ORDEN CORRECTO -->
+    <!-- 1. Primero módulos de utilidad independientes -->
     <script src="js/ui.js"></script>
+    
+    <!-- 3. Módulos funcionales -->
+    <script src="js/map.js"></script>
+    
+    <!-- 2. Módulos de datos -->
+    <script src="js/data.js"></script>
+    <script src="js/api.js"></script>
+    
+    <script src="js/security.js"></script>
+    <script src="js/routes.js"></script>
+    
+    <!-- 4. Finalmente el módulo principal que coordina todo -->
     <script src="js/app.js"></script>
 </body>
 </html>
