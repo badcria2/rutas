@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Ruta con buscador - OpenRouteService + Leaflet</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+  
+  <style>
+    #map {
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+
+<div id="map"></div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<script>
+  const apiKey = '5b3ce3597851110001cf62485bae0162dc5e4090a9353097b62bb6ae'; // Coloca tu API Key de OpenRouteService
+
+  const map = L.map('map').setView([48.8566, 2.3522], 13); // París
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  // Variables para marcadores
+  let startMarker = null;
+  let endMarker = null;
+  let routeLayer = null;
+
+  // Función para trazar la ruta
+  function getRoute(startCoords, endCoords) {
+    fetch('https://api.openrouteservice.org/v2/directions/foot-walking/geojson', {
+      method: 'POST',
+      headers: {
+        'Authorization': apiKey,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        coordinates: [startCoords, endCoords]
+      })
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (routeLayer) {
+        map.removeLayer(routeLayer);
+      }
+      routeLayer = L.geoJSON(data, {
+        style: { color: 'blue', weight: 5 }
+      }).addTo(map);
+    })
+    .catch(err => console.error(err));
+  }
+
+  // Crear buscadores
+  const geocoderStart = L.Control.geocoder({
+    defaultMarkGeocode: false,
+    placeholder: 'Punto de Inicio',
+  })
+  .on('markgeocode', function(e) {
+    if (startMarker) map.removeLayer(startMarker);
+    startMarker = L.marker(e.geocode.center).addTo(map).bindPopup("Inicio").openPopup();
+    map.setView(e.geocode.center, 14);
+
+    // Guardar coordenadas [lng, lat]
+    const startCoords = [e.geocode.center.lng, e.geocode.center.lat];
+    startMarker.coords = startCoords;
+
+    // Trazar si ya se eligió destino
+    if (endMarker && endMarker.coords) {
+      getRoute(startCoords, endMarker.coords);
+    }
+  })
+  .addTo(map);
+
+  const geocoderEnd = L.Control.geocoder({
+    defaultMarkGeocode: false,
+    placeholder: 'Destino',
+  })
+  .on('markgeocode', function(e) {
+    if (endMarker) map.removeLayer(endMarker);
+    endMarker = L.marker(e.geocode.center).addTo(map).bindPopup("Destino").openPopup();
+    map.setView(e.geocode.center, 14);
+
+    const endCoords = [e.geocode.center.lng, e.geocode.center.lat];
+    endMarker.coords = endCoords;
+
+    if (startMarker && startMarker.coords) {
+      getRoute(startMarker.coords, endCoords);
+    }
+  })
+  .addTo(map);
+</script>
+
+</body>
+</html>
