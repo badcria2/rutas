@@ -147,7 +147,7 @@ function actualizarInformacionRuta(rutaData) {
     const detallesElemento = document.getElementById('route-details');
 
     // Formatear la distancia (convertir de metros a km)
-    const distanciaKm = (rutaData.propiedades.distancia / 1000).toFixed(1);
+    const distanciaKm = (rutaData.propiedades.distancia).toFixed(1);
 
     // Formatear el tiempo (convertir de segundos a minutos)
     const tiempoMinutos = Math.round(rutaData.propiedades.duracion / 60);
