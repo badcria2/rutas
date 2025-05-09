@@ -5,7 +5,7 @@
 
 // Modo de transporte actual (valor por defecto: auto)
 let modoTransporteActual = 'driving-car';
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = 'https://rutas-rywi.onrender.com';
 
 // Inicializar la aplicación cuando el DOM esté cargado
 document.addEventListener('DOMContentLoaded', function () {
