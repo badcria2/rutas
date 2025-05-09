@@ -122,3 +122,68 @@ INSERT INTO puntos_seguridad (nombre, tipo, descripcion, ubicacion) VALUES
 ('Módulo de Seguridad Ciudadana Lince', 'puestoseguridad', 'Punto de atención al ciudadano y vigilancia.', ST_SetSRID(ST_MakePoint(-77.0345, -12.0885), 4326));
 
 -- Añadir más datos según sea necesario
+-- Datos de muestra para la tabla incidentes en Lima, Perú
+-- Las coordenadas están en formato POINT(longitud latitud)
+INSERT INTO incidentes (tipo, descripcion, fecha, ubicacion) VALUES
+-- Incidentes de tipo 'robo'
+('robo', 'Robo de celular a transeúnte por dos sujetos en motocicleta', '2025-05-01 14:30:00', ST_SetSRID(ST_MakePoint(-77.0270, -12.1150), 4326)),
+('robo', 'Arrebato de cartera en paradero de bus', '2025-05-02 19:45:00', ST_SetSRID(ST_MakePoint(-77.0365, -12.1180), 4326)),
+('robo', 'Robo de laptop en cafetería a cliente distraído', '2025-05-03 16:20:00', ST_SetSRID(ST_MakePoint(-77.0305, -12.1205), 4326)),
+('robo', 'Robo de billetera en transporte público', '2025-05-04 08:10:00', ST_SetSRID(ST_MakePoint(-77.0390, -12.0950), 4326)),
+('robo', 'Sustracción de pertenencias en taxi no autorizado', '2025-05-04 22:15:00', ST_SetSRID(ST_MakePoint(-77.0200, -12.1100), 4326)),
+('robo', 'Robo de celular con modalidad "al paso"', '2025-05-04 17:40:00', ST_SetSRID(ST_MakePoint(-77.0380, -12.0720), 4326)),
+('robo', 'Hurto de bicicleta estacionada', '2025-05-05 12:30:00', ST_SetSRID(ST_MakePoint(-77.0323, -12.1190), 4326)),
+('robo', 'Robo de autopartes en vehículo estacionado', '2025-05-05 02:15:00', ST_SetSRID(ST_MakePoint(-77.0290, -12.1080), 4326)),
+('robo', 'Robo a tienda de conveniencia', '2025-05-05 23:40:00', ST_SetSRID(ST_MakePoint(-77.0280, -12.0880), 4326)),
+('robo', 'Arrebato de reloj a transeúnte', '2025-05-06 18:20:00', ST_SetSRID(ST_MakePoint(-77.0370, -12.0970), 4326)),
+
+-- Incidentes de tipo 'acoso'
+('acoso', 'Acoso verbal a transeúnte', '2025-05-02 15:20:00', ST_SetSRID(ST_MakePoint(-77.0340, -12.1170), 4326)),
+('acoso', 'Seguimiento intimidante a estudiante', '2025-05-03 13:45:00', ST_SetSRID(ST_MakePoint(-77.0180, -12.1120), 4326)),
+('acoso', 'Acoso en transporte público a pasajera', '2025-05-04 07:30:00', ST_SetSRID(ST_MakePoint(-77.0310, -12.0880), 4326)),
+('acoso', 'Comportamiento intimidante hacia grupo de jóvenes', '2025-05-05 20:15:00', ST_SetSRID(ST_MakePoint(-77.0520, -12.0630), 4326)),
+('acoso', 'Acoso callejero a transeúntes', '2025-05-05 18:50:00', ST_SetSRID(ST_MakePoint(-77.0250, -12.1250), 4326)),
+
+-- Incidentes de tipo 'accidente'
+('accidente', 'Colisión entre motocicleta y automóvil', '2025-05-01 08:45:00', ST_SetSRID(ST_MakePoint(-77.0400, -12.0950), 4326)),
+('accidente', 'Atropello en cruce peatonal', '2025-05-02 17:30:00', ST_SetSRID(ST_MakePoint(-77.0320, -12.0650), 4326)),
+('accidente', 'Choque múltiple en intersección', '2025-05-03 12:15:00', ST_SetSRID(ST_MakePoint(-77.0150, -12.1250), 4326)),
+('accidente', 'Caída de peatón por desnivel en acera', '2025-05-04 09:20:00', ST_SetSRID(ST_MakePoint(-77.0270, -12.1050), 4326)),
+('accidente', 'Colisión por invasión de carril', '2025-05-05 14:10:00', ST_SetSRID(ST_MakePoint(-77.0420, -12.0830), 4326)),
+('accidente', 'Accidente con motociclista de delivery', '2025-05-05 19:05:00', ST_SetSRID(ST_MakePoint(-77.0350, -12.1000), 4326)),
+('accidente', 'Vehículo impactó contra poste', '2025-05-06 01:30:00', ST_SetSRID(ST_MakePoint(-77.0280, -12.0900), 4326)),
+
+-- Incidentes de tipo 'iluminacion'
+('iluminacion', 'Falta de iluminación en calle secundaria', '2025-05-01 20:30:00', ST_SetSRID(ST_MakePoint(-77.0600, -12.0900), 4326)),
+('iluminacion', 'Poste de luz dañado', '2025-05-02 19:15:00', ST_SetSRID(ST_MakePoint(-77.0250, -12.1220), 4326)),
+('iluminacion', 'Zona de parque sin alumbrado funcionando', '2025-05-03 21:20:00', ST_SetSRID(ST_MakePoint(-77.0450, -12.1050), 4326)),
+('iluminacion', 'Calle con alumbrado intermitente', '2025-05-04 22:30:00', ST_SetSRID(ST_MakePoint(-77.0370, -12.0740), 4326)),
+('iluminacion', 'Pasaje peatonal oscuro por falta de mantenimiento', '2025-05-05 20:45:00', ST_SetSRID(ST_MakePoint(-77.0190, -12.1150), 4326)),
+
+-- Incidentes de tipo 'transito'
+('transito', 'Congestión por semáforo descompuesto', '2025-05-01 07:30:00', ST_SetSRID(ST_MakePoint(-77.0320, -12.0920), 4326)),
+('transito', 'Bloqueo vial por manifestación', '2025-05-02 11:15:00', ST_SetSRID(ST_MakePoint(-77.0290, -12.0550), 4326)),
+('transito', 'Embotellamiento por obras en la vía', '2025-05-03 18:00:00', ST_SetSRID(ST_MakePoint(-77.0180, -12.1030), 4326)),
+('transito', 'Congestionamiento por vehículo averiado', '2025-05-04 13:40:00', ST_SetSRID(ST_MakePoint(-77.0400, -12.0860), 4326)),
+('transito', 'Tráfico intenso por cierre parcial de carril', '2025-05-05 17:25:00', ST_SetSRID(ST_MakePoint(-77.0350, -12.1120), 4326)),
+
+-- Incidentes varios (tipo 'otro')
+('otro', 'Persona en situación de emergencia médica', '2025-05-01 15:50:00', ST_SetSRID(ST_MakePoint(-77.0330, -12.1140), 4326)),
+('otro', 'Disturbio en vía pública', '2025-05-02 23:10:00', ST_SetSRID(ST_MakePoint(-77.0420, -12.0830), 4326)),
+('otro', 'Persona perdida pidiendo ayuda', '2025-05-03 16:45:00', ST_SetSRID(ST_MakePoint(-77.0260, -12.1210), 4326)),
+('otro', 'Fuga de agua en vía pública', '2025-05-04 10:20:00', ST_SetSRID(ST_MakePoint(-77.0310, -12.0980), 4326)),
+('otro', 'Árbol caído bloqueando paso peatonal', '2025-05-05 08:30:00', ST_SetSRID(ST_MakePoint(-77.0270, -12.1060), 4326)),
+
+-- Incidentes más recientes (últimas 24 horas)
+('robo', 'Robo de celular en zona comercial', '2025-05-08 16:30:00', ST_SetSRID(ST_MakePoint(-77.0310, -12.1130), 4326)),
+('acoso', 'Acoso a estudiantes cerca de universidad', '2025-05-08 14:20:00', ST_SetSRID(ST_MakePoint(-77.0280, -12.0730), 4326)),
+('iluminacion', 'Calle sin iluminación por corte eléctrico', '2025-05-08 20:15:00', ST_SetSRID(ST_MakePoint(-77.0230, -12.1050), 4326)),
+('accidente', 'Choque entre auto y taxi en intersección', '2025-05-08 09:45:00', ST_SetSRID(ST_MakePoint(-77.0360, -12.0950), 4326)),
+('transito', 'Congestión severa por obras municipales', '2025-05-08 08:20:00', ST_SetSRID(ST_MakePoint(-77.0290, -12.1020), 4326)),
+('otro', 'Incendio menor en local comercial', '2025-05-08 11:35:00', ST_SetSRID(ST_MakePoint(-77.0340, -12.0990), 4326)),
+('robo', 'Intento de robo a vivienda', '2025-05-08 03:20:00', ST_SetSRID(ST_MakePoint(-77.0190, -12.1180), 4326)),
+('accidente', 'Accidente con motociclista repartidor', '2025-05-08 18:50:00', ST_SetSRID(ST_MakePoint(-77.0380, -12.1010), 4326)),
+('iluminacion', 'Zona de parque con luces intermitentes', '2025-05-08 19:30:00', ST_SetSRID(ST_MakePoint(-77.0330, -12.1090), 4326)),
+('acoso', 'Persona sospechosa siguiendo a transeúntes', '2025-05-08 21:15:00', ST_SetSRID(ST_MakePoint(-77.0300, -12.0890), 4326));
+
+-- Añadir más incidentes según sea necesario

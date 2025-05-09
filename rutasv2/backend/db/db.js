@@ -11,7 +11,7 @@ const pool = new Pool({
     user: process.env.DB_USER || 'postgres',
     host: process.env.DB_HOST || 'localhost',
     database: process.env.DB_NAME || 'security_db',
-    password: '85857855pepito',
+    password: process.env.DB_PASSWORD ||'85857855pepito',
     port: process.env.DB_PORT || 5432,
     ssl: {
     rejectUnauthorized: false // Importante para Render
