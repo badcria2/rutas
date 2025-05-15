@@ -32,6 +32,46 @@ CREATE TABLE incidentes (
 CREATE INDEX idx_incidentes_ubicacion ON incidentes USING GIST(ubicacion);
 --
 
+ CREATE TABLE rutas_favoritas (
+            id SERIAL PRIMARY KEY,
+            usuario_id INTEGER NOT NULL,  -- ID del usuario (para un sistema con autenticación)
+            nombre VARCHAR(255) NOT NULL, -- Nombre descriptivo de la ruta
+            origen_nombre VARCHAR(255) NOT NULL, -- Nombre del punto de origen
+            origen_lat NUMERIC(10, 7) NOT NULL,  -- Latitud del origen
+            origen_lng NUMERIC(10, 7) NOT NULL,  -- Longitud del origen
+            destino_nombre VARCHAR(255) NOT NULL, -- Nombre del punto de destino
+            destino_lat NUMERIC(10, 7) NOT NULL,  -- Latitud del destino
+            destino_lng NUMERIC(10, 7) NOT NULL,  -- Longitud del destino
+            modo_transporte VARCHAR(50) DEFAULT 'driving-car', -- Modo de transporte (auto, a pie, bicicleta)
+            fecha_creacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+            ultima_modificacion TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        -- Índices para mejorar el rendimiento
+        CREATE INDEX rutas_favoritas_usuario_id_idx ON rutas_favoritas(usuario_id);
+        CREATE INDEX rutas_favoritas_fecha_idx ON rutas_favoritas(fecha_creacion);
+        
+        -- Comentarios para documentar la tabla
+        COMMENT ON TABLE rutas_favoritas IS 'Almacena las rutas favoritas guardadas por los usuarios';
+        COMMENT ON COLUMN rutas_favoritas.usuario_id IS 'ID del usuario que guardó la ruta';
+        COMMENT ON COLUMN rutas_favoritas.nombre IS 'Nombre descriptivo asignado a la ruta';
+        COMMENT ON COLUMN rutas_favoritas.modo_transporte IS 'Modo de transporte: driving-car, foot-walking, cycling-regular';
+        
+        -- Trigger para actualizar la fecha de última modificación
+        CREATE OR REPLACE FUNCTION update_ultima_modificacion_column()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.ultima_modificacion = CURRENT_TIMESTAMP;
+            RETURN NEW;
+        END;
+        $$ language 'plpgsql';
+        
+        CREATE TRIGGER update_rutas_favoritas_modtime
+        BEFORE UPDATE ON rutas_favoritas
+        FOR EACH ROW
+        EXECUTE FUNCTION update_ultima_modificacion_column();
+        
+        RAISE NOTICE 'Tabla rutas_favoritas creada con éxito';
 
 -- Datos de muestra para puntos de seguridad en Lima, Perú
 -- Las coordenadas están en formato POINT(longitud latitud)

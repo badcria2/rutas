@@ -41,6 +41,20 @@
                 </button>
             </div>
             <button id="buscar-ruta" class="btn-buscar">Buscar Ruta Segura</button>
+            <div class="favorites-container">
+                <button id="save-route" class="btn-favorite" title="Guardar esta ruta">
+                    <i class="fas fa-heart"></i> Guardar Ruta
+                </button>
+                <div class="dropdown">
+                    <button id="favorites-dropdown" class="btn-favorite dropdown-toggle">
+                        <i class="fas fa-star"></i> Mis Rutas
+                    </button>
+                    <div id="favorites-list" class="dropdown-content hidden">
+                        <!-- Aquí se listarán las rutas favoritas -->
+                        <div class="empty-favorites">No hay rutas guardadas</div>
+                    </div>
+                </div>
+            </div>
         </div>
         
         <div class="main-content">
@@ -111,5 +125,6 @@
     <!-- Custom JS -->
     <script src="js/map.js"></script>
     <script src="js/app.js"></script>
+    <script src="js/favorites.js"></script>
 </body>
 </html>

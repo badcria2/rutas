@@ -315,12 +315,341 @@ async function registrarIncidente(incidenteData) {
         throw error;
     }
 }
+/**
+ * Funciones adicionales para manejar rutas favoritas en db.js
+ * Añade estas funciones a tu archivo db.js existente
+ */
 
+/**
+ * Obtiene todas las rutas favoritas de un usuario
+ * @param {number} usuarioId - ID del usuario
+ * @returns {Promise<Array>} - Array de rutas favoritas
+ */
+async function getRutasFavoritas(usuarioId) {
+    try {
+        const query = `
+            SELECT 
+                id,
+                nombre,
+                origen_nombre,
+                origen_lat,
+                origen_lng,
+                destino_nombre,
+                destino_lat,
+                destino_lng,
+                modo_transporte,
+                fecha_creacion
+            FROM rutas_favoritas
+            WHERE usuario_id = $1
+            ORDER BY fecha_creacion DESC
+        `;
+        
+        const result = await pool.query(query, [usuarioId]);
+        
+        // Formatear el resultado para la API
+        return result.rows.map(row => ({
+            id: row.id,
+            nombre: row.nombre,
+            origen: {
+                nombre: row.origen_nombre,
+                coordenadas: {
+                    lat: row.origen_lat,
+                    lng: row.origen_lng
+                }
+            },
+            destino: {
+                nombre: row.destino_nombre,
+                coordenadas: {
+                    lat: row.destino_lat,
+                    lng: row.destino_lng
+                }
+            },
+            modoTransporte: row.modo_transporte,
+            fechaCreacion: row.fecha_creacion
+        }));
+    } catch (error) {
+        console.error('Error al obtener rutas favoritas:', error);
+        throw error;
+    }
+}
+
+/**
+ * Obtiene una ruta favorita específica por su ID
+ * @param {number} rutaId - ID de la ruta favorita
+ * @returns {Promise<Object|null>} - Ruta favorita o null si no existe
+ */
+async function getRutaFavoritaPorId(rutaId) {
+    try {
+        const query = `
+            SELECT 
+                id,
+                nombre,
+                origen_nombre,
+                origen_lat,
+                origen_lng,
+                destino_nombre,
+                destino_lat,
+                destino_lng,
+                modo_transporte,
+                fecha_creacion
+            FROM rutas_favoritas
+            WHERE id = $1
+        `;
+        
+        const result = await pool.query(query, [rutaId]);
+        
+        if (result.rows.length === 0) {
+            return null;
+        }
+        
+        const row = result.rows[0];
+        
+        // Formatear el resultado para la API
+        return {
+            id: row.id,
+            nombre: row.nombre,
+            origen: {
+                nombre: row.origen_nombre,
+                coordenadas: {
+                    lat: row.origen_lat,
+                    lng: row.origen_lng
+                }
+            },
+            destino: {
+                nombre: row.destino_nombre,
+                coordenadas: {
+                    lat: row.destino_lat,
+                    lng: row.destino_lng
+                }
+            },
+            modoTransporte: row.modo_transporte,
+            fechaCreacion: row.fecha_creacion
+        };
+    } catch (error) {
+        console.error('Error al obtener ruta favorita por ID:', error);
+        throw error;
+    }
+}
+
+/**
+ * Guarda una nueva ruta favorita
+ * @param {Object} rutaData - Datos de la ruta favorita
+ * @returns {Promise<Object>} - Ruta favorita guardada
+ */
+async function guardarRutaFavorita(rutaData) {
+    try {
+        const {
+            usuario_id,
+            nombre,
+            origen_nombre,
+            origen_lat,
+            origen_lng,
+            destino_nombre,
+            destino_lat,
+            destino_lng,
+            modo_transporte,
+            fecha_creacion
+        } = rutaData;
+        
+        const query = `
+            INSERT INTO rutas_favoritas (
+                usuario_id,
+                nombre,
+                origen_nombre,
+                origen_lat,
+                origen_lng,
+                destino_nombre,
+                destino_lat,
+                destino_lng,
+                modo_transporte,
+                fecha_creacion
+            )
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+            RETURNING 
+                id,
+                nombre,
+                origen_nombre,
+                origen_lat,
+                origen_lng,
+                destino_nombre,
+                destino_lat,
+                destino_lng,
+                modo_transporte,
+                fecha_creacion
+        `;
+        
+        const result = await pool.query(query, [
+            usuario_id,
+            nombre,
+            origen_nombre,
+            origen_lat,
+            origen_lng,
+            destino_nombre,
+            destino_lat,
+            destino_lng,
+            modo_transporte,
+            fecha_creacion
+        ]);
+        
+        const row = result.rows[0];
+        
+        // Formatear el resultado para la API
+        return {
+            id: row.id,
+            nombre: row.nombre,
+            origen: {
+                nombre: row.origen_nombre,
+                coordenadas: {
+                    lat: row.origen_lat,
+                    lng: row.origen_lng
+                }
+            },
+            destino: {
+                nombre: row.destino_nombre,
+                coordenadas: {
+                    lat: row.destino_lat,
+                    lng: row.destino_lng
+                }
+            },
+            modoTransporte: row.modo_transporte,
+            fechaCreacion: row.fecha_creacion
+        };
+    } catch (error) {
+        console.error('Error al guardar ruta favorita:', error);
+        throw error;
+    }
+}
+
+/**
+ * Actualiza una ruta favorita existente
+ * @param {number} rutaId - ID de la ruta favorita
+ * @param {Object} rutaData - Nuevos datos de la ruta favorita
+ * @returns {Promise<Object>} - Ruta favorita actualizada
+ */
+async function actualizarRutaFavorita(rutaId, rutaData) {
+    try {
+        const {
+            nombre,
+            origen_nombre,
+            origen_lat,
+            origen_lng,
+            destino_nombre,
+            destino_lat,
+            destino_lng,
+            modo_transporte
+        } = rutaData;
+        
+        const query = `
+            UPDATE rutas_favoritas
+            SET 
+                nombre = $2,
+                origen_nombre = $3,
+                origen_lat = $4,
+                origen_lng = $5,
+                destino_nombre = $6,
+                destino_lat = $7,
+                destino_lng = $8,
+                modo_transporte = $9
+            WHERE id = $1
+            RETURNING 
+                id,
+                nombre,
+                origen_nombre,
+                origen_lat,
+                origen_lng,
+                destino_nombre,
+                destino_lat,
+                destino_lng,
+                modo_transporte,
+                fecha_creacion
+        `;
+        
+        const result = await pool.query(query, [
+            rutaId,
+            nombre,
+            origen_nombre,
+            origen_lat,
+            origen_lng,
+            destino_nombre,
+            destino_lat,
+            destino_lng,
+            modo_transporte
+        ]);
+        
+        if (result.rows.length === 0) {
+            throw new Error('Ruta favorita no encontrada');
+        }
+        
+        const row = result.rows[0];
+        
+        // Formatear el resultado para la API
+        return {
+            id: row.id,
+            nombre: row.nombre,
+            origen: {
+                nombre: row.origen_nombre,
+                coordenadas: {
+                    lat: row.origen_lat,
+                    lng: row.origen_lng
+                }
+            },
+            destino: {
+                nombre: row.destino_nombre,
+                coordenadas: {
+                    lat: row.destino_lat,
+                    lng: row.destino_lng
+                }
+            },
+            modoTransporte: row.modo_transporte,
+            fechaCreacion: row.fecha_creacion
+        };
+    } catch (error) {
+        console.error('Error al actualizar ruta favorita:', error);
+        throw error;
+    }
+}
+
+/**
+ * Elimina una ruta favorita
+ * @param {number} rutaId - ID de la ruta favorita
+ * @returns {Promise<boolean>} - true si se eliminó correctamente
+ */
+async function eliminarRutaFavorita(rutaId) {
+    try {
+        const query = `
+            DELETE FROM rutas_favoritas
+            WHERE id = $1
+            RETURNING id
+        `;
+        
+        const result = await pool.query(query, [rutaId]);
+        
+        if (result.rows.length === 0) {
+            throw new Error('Ruta favorita no encontrada');
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('Error al eliminar ruta favorita:', error);
+        throw error;
+    }
+}
+
+// Asegúrate de exportar las nuevas funciones
 module.exports = {
+    // Funciones existentes...
     query: (text, params) => pool.query(text, params),
     getPuntosSeguridad,
     getIncidentes,
     getPuntosEnRuta,
     calcularIndiceSeguridad,
-    registrarIncidente
+    registrarIncidente,
+    
+    // Nuevas funciones para rutas favoritas
+    getRutasFavoritas,
+    getRutaFavoritaPorId,
+    guardarRutaFavorita,
+    actualizarRutaFavorita,
+    eliminarRutaFavorita
 };
+ 

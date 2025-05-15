@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Configurar eventos para el reporte de incidentes
     configurarModalReporteIncidentes();
+    configurarInputsGeocoder();
 });
 /**
  * Obtiene y muestra una ruta visual natural entre los puntos seleccionados
@@ -138,7 +139,7 @@ function configurarModalReporteIncidentes() {
     });
 }
 
- 
+
 /**
  * Actualiza la información de la ruta en la interfaz
  * @param {Object} rutaData - Datos de la ruta
@@ -189,9 +190,7 @@ function actualizarInformacionRuta(rutaData) {
     }
 }
 
-/**
- * Envía el reporte de incidente al servidor
- */
+
 /**
  * Envía el reporte de incidente al servidor
  */
@@ -252,4 +251,98 @@ function enviarReporteIncidente() {
             console.error('Error:', error);
             mostrarNotificacion('No se pudo reportar el incidente. Intente nuevamente.', 'error');
         });
+}
+
+/**
+ * Configura los inputs  
+ */
+function configurarInputsGeocoder() {
+    const inputOrigen = document.getElementById('origen');
+    const inputDestino = document.getElementById('destino');
+
+    // Asegurar que estamos mostrando el ícono correcto
+    const contenedorOrigen = inputOrigen.parentElement;
+    const contenedorDestino = inputDestino.parentElement;
+
+    // Cambiar el ícono para que se vea más como el de Leaflet Control Geocoder
+    contenedorOrigen.querySelector('i').className = 'fas fa-search';
+    contenedorDestino.querySelector('i').className = 'fas fa-search';
+
+    // Añadir placeholder similares a los de index2.html
+    inputOrigen.placeholder = 'Buscar punto de inicio...';
+    inputDestino.placeholder = 'Buscar destino...';
+
+    // Cuando se presiona Enter en un input, activa la búsqueda
+    inputOrigen.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            // Usar la función de geocodificación de Leaflet si está disponible
+            if (window.geocoderStart) {
+                if (typeof geocoderStart.geocode === 'function') {
+                    geocoderStart.geocode(this.value);
+                } else if (typeof geocoderStart._geocode === 'function') {
+                    geocoderStart._geocode(this.value);
+                } else {
+                    // Alternativa: usar directamente el geocoder base
+                    geocoder.geocode(this.value, results => {
+                        if (results && results.length > 0) {
+                            const result = results[0];
+                            const event = {
+                                geocode: result
+                            };
+                            geocoderStart.fire('markgeocode', event);
+                        }
+                    });
+                }
+            }
+        }
+    });
+
+    inputDestino.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            // Usar la función de geocodificación de Leaflet si está disponible
+            if (window.geocoderEnd) {
+                if (typeof geocoderStart.geocode === 'function') {
+                    geocoderStart.geocode(this.value);
+                } else if (typeof geocoderStart._geocode === 'function') {
+                    geocoderStart._geocode(this.value);
+                } else {
+                    // Alternativa: usar directamente el geocoder base
+                    geocoder.geocode(this.value, results => {
+                        if (results && results.length > 0) {
+                            const result = results[0];
+                            const event = {
+                                geocode: result
+                            };
+                            geocoderStart.fire('markgeocode', event);
+                        }
+                    });
+                }
+            }
+        }
+    });
+
+    // Añadir más estilos dinámicamente para que se parezcan más a los de index2.html
+    const style = document.createElement('style');
+    style.textContent = `
+        .input-group {
+            position: relative;
+        }
+        .input-group input {
+            transition: border-color 0.2s ease-in-out;
+        }
+        .input-group input:focus {
+            border-color: #3388ff;
+            box-shadow: 0 0 0 3px rgba(51, 136, 255, 0.25);
+        }
+        .input-group i {
+            z-index: 5;
+        }
+        /* Estilo para cuando se está realizando una búsqueda */
+        .input-group.searching input {
+            background-color: #f5f5f5;
+        }
+    `;
+    document.head.appendChild(style);
 }

@@ -42,23 +42,23 @@ function inicializarMapa() {
 
     // Inicializar la capa de puntos de seguridad
     securityPointsLayer = L.layerGroup().addTo(map);
-    
+
     // Inicializar la capa de incidentes
     incidentesLayer = L.layerGroup().addTo(map);
 
     // Añadir manejador de eventos para reportar incidentes haciendo clic en el mapa
-    map.on('contextmenu', function(e) {
+    map.on('contextmenu', function (e) {
         // Guardar coordenadas temporalmente para el reporte de incidentes
         window.tempIncidentLocation = e.latlng;
-        
+
         // Mostrar un popup con opción para reportar incidente
         L.popup()
             .setLatLng(e.latlng)
             .setContent('<button id="reportHereBtn" class="btn-report-here">Reportar incidente aquí</button>')
             .openOn(map);
-        
+
         // Agregar evento al botón del popup
-        document.getElementById('reportHereBtn').addEventListener('click', function() {
+        document.getElementById('reportHereBtn').addEventListener('click', function () {
             // Cerrar el popup y abrir el modal de reporte
             map.closePopup();
             abrirModalReporte(e.latlng);
@@ -67,17 +67,17 @@ function inicializarMapa() {
 
     // Cargar puntos de seguridad iniciales
     cargarPuntosSeguridadIniciales();
-    
+
     // Cargar incidentes iniciales
     cargarIncidentes();
-    
+
     // Actualizar incidentes cuando el mapa se mueva significativamente
-    map.on('moveend', function() {
+    map.on('moveend', function () {
         if (map.getZoom() > 12) {
             cargarIncidentes();
         }
     });
-    
+
     habilitarSeleccionPuntosEnMapa();
     agregarBotonesUbicacionesPredefinidas();
     console.log('Mapa inicializado correctamente');
@@ -86,7 +86,7 @@ function inicializarMapa() {
 function habilitarSeleccionPuntosEnMapa() {
     // Variable para rastrear qué punto estamos seleccionando
     let seleccionandoPunto = 'origen'; // 'origen' o 'destino'
-    
+
     // Crear un panel de control para selección
     const panelControl = document.createElement('div');
     panelControl.className = 'panel-seleccion-puntos';
@@ -98,14 +98,14 @@ function habilitarSeleccionPuntosEnMapa() {
     panelControl.style.borderRadius = '5px';
     panelControl.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
     panelControl.style.zIndex = '1000';
-    
+
     // Añadir título
     const titulo = document.createElement('div');
     titulo.textContent = 'Seleccionar puntos en el mapa';
     titulo.style.fontWeight = 'bold';
     titulo.style.marginBottom = '8px';
     panelControl.appendChild(titulo);
-    
+
     // Añadir botones de selección
     const btnOrigen = document.createElement('button');
     btnOrigen.textContent = '📍 Seleccionar Origen';
@@ -124,7 +124,7 @@ function habilitarSeleccionPuntosEnMapa() {
         mensajeAyuda.textContent = '👆 Haz clic en el mapa para seleccionar el punto de ORIGEN';
     });
     panelControl.appendChild(btnOrigen);
-    
+
     const btnDestino = document.createElement('button');
     btnDestino.textContent = '🏁 Seleccionar Destino';
     btnDestino.style.padding = '5px 10px';
@@ -140,7 +140,7 @@ function habilitarSeleccionPuntosEnMapa() {
         mensajeAyuda.textContent = '👆 Haz clic en el mapa para seleccionar el punto de DESTINO';
     });
     panelControl.appendChild(btnDestino);
-    
+
     // Mensaje de ayuda
     const mensajeAyuda = document.createElement('div');
     mensajeAyuda.textContent = '👆 Haz clic en el mapa para seleccionar el punto de ORIGEN';
@@ -148,57 +148,65 @@ function habilitarSeleccionPuntosEnMapa() {
     mensajeAyuda.style.fontSize = '0.9em';
     mensajeAyuda.style.color = '#333';
     panelControl.appendChild(mensajeAyuda);
-    
+
     // Añadir al DOM
     document.getElementById('map').appendChild(panelControl);
-    
+
     // Añadir evento de clic al mapa
-    map.on('click', function(e) {
+    map.on('click', function (e) {
         // Obtener coordenadas del clic
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
-        
+
         console.log(`Punto seleccionado: ${seleccionandoPunto} - Lat: ${lat}, Lng: ${lng}`);
-        
+
         // Eliminar marcador existente si hay uno
         if (seleccionandoPunto === 'origen' && marcadorOrigen) {
             map.removeLayer(marcadorOrigen);
         } else if (seleccionandoPunto === 'destino' && marcadorDestino) {
             map.removeLayer(marcadorDestino);
         }
-        
+
         // Crear un nuevo marcador
         const nuevoMarcador = L.marker([lat, lng], {
             draggable: true, // Para permitir ajuste manual
             title: seleccionandoPunto === 'origen' ? 'Punto de origen' : 'Punto de destino'
         });
-        
+
         // Añadir popup con información
         nuevoMarcador.bindPopup(`<b>${seleccionandoPunto === 'origen' ? 'Origen' : 'Destino'}</b><br>Lat: ${lat.toFixed(6)}<br>Lng: ${lng.toFixed(6)}`);
-        
+
         // Actualizar campo de texto correspondiente con geocodificación inversa
-        geocoder.reverse(e.latlng, map.options.crs.scale(map.getZoom()), results => {
-            const ubicacion = results && results.length > 0 ? results[0].name : `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        // Asegúrate de que L.Control.Geocoder existe
+        if (L.Control.Geocoder && L.Control.Geocoder.nominatim) {
+            // Crear un geocoder específico para la geocodificación inversa
+            const nominatim = L.Control.Geocoder.nominatim();
+            nominatim.reverse(e.latlng, map.getZoom(), results => {
+                const ubicacion = results && results.length > 0 ? results[0].name : `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                document.getElementById(seleccionandoPunto).value = ubicacion;
+            });
+        } else {
+            // Alternativa si no está disponible el geocoder
+            const ubicacion = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
             document.getElementById(seleccionandoPunto).value = ubicacion;
-        });
-        
+        }
         // Actualizar marcador global
         if (seleccionandoPunto === 'origen') {
             marcadorOrigen = nuevoMarcador;
         } else {
             marcadorDestino = nuevoMarcador;
         }
-        
+
         // Añadir el marcador al mapa
         nuevoMarcador.addTo(map);
         nuevoMarcador.openPopup();
-        
+
         // Cambiar automáticamente a seleccionar el otro punto si es necesario
-        if ((seleccionandoPunto === 'origen' && !marcadorDestino) || 
+        if ((seleccionandoPunto === 'origen' && !marcadorDestino) ||
             (seleccionandoPunto === 'destino' && !marcadorOrigen)) {
             // Cambiar modo de selección
             seleccionandoPunto = seleccionandoPunto === 'origen' ? 'destino' : 'origen';
-            
+
             // Actualizar UI
             if (seleccionandoPunto === 'origen') {
                 btnOrigen.style.backgroundColor = '#4CAF50';
@@ -210,7 +218,7 @@ function habilitarSeleccionPuntosEnMapa() {
                 mensajeAyuda.textContent = '👆 Haz clic en el mapa para seleccionar el punto de DESTINO';
             }
         }
-        
+
         // Ajustar la vista si hay ambos puntos
         if (marcadorOrigen && marcadorDestino) {
             ajustarVistaMapa();
@@ -257,7 +265,7 @@ function agregarBotonesUbicacionesPredefinidas() {
         { nombre: "Barranco", lat: -12.1400, lng: -77.0270 },
         { nombre: "San Borja", lat: -12.1089, lng: -77.0047 }
     ];
-    
+
     const btnDemo = document.createElement('button');
     btnDemo.textContent = '🚀 Cargar ejemplo';
     btnDemo.style.position = 'absolute';
@@ -271,12 +279,12 @@ function agregarBotonesUbicacionesPredefinidas() {
     btnDemo.style.cursor = 'pointer';
     btnDemo.style.zIndex = '1000';
     btnDemo.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-    
-    btnDemo.addEventListener('click', function() {
+
+    btnDemo.addEventListener('click', function () {
         // Limpiar marcadores existentes
         if (marcadorOrigen) map.removeLayer(marcadorOrigen);
         if (marcadorDestino) map.removeLayer(marcadorDestino);
-        
+
         // Crear origen en Miraflores
         const origen = ubicaciones[0];
         marcadorOrigen = L.marker([origen.lat, origen.lng], {
@@ -284,7 +292,7 @@ function agregarBotonesUbicacionesPredefinidas() {
             title: 'Origen: ' + origen.nombre
         }).addTo(map);
         document.getElementById('origen').value = origen.nombre;
-        
+
         // Crear destino en San Isidro
         const destino = ubicaciones[1];
         marcadorDestino = L.marker([destino.lat, destino.lng], {
@@ -292,46 +300,393 @@ function agregarBotonesUbicacionesPredefinidas() {
             title: 'Destino: ' + destino.nombre
         }).addTo(map);
         document.getElementById('destino').value = destino.nombre;
-        
+
         // Ajustar vista
         ajustarVistaMapa();
-        
+
         // Mostrar notificación
         mostrarNotificacion('Ejemplo cargado. Ahora puedes buscar la ruta.', 'success');
     });
-    
+
     document.getElementById('map').appendChild(btnDemo);
 }
- 
+
 
 /**
  * Inicializa el geocoder para búsqueda de direcciones
  */
 function inicializarGeocoder() {
-    // Inicializar el geocoder de Leaflet Control Geocoder
-    geocoder = L.Control.Geocoder.nominatim({
-        geocodingQueryParams: {
-            countrycodes: 'pe',  // Limitar búsqueda a Perú
-            viewbox: '-78,-11,-76,-13',  // Aproximado para área de Lima
-            bounded: 1
-        }
-    });
+    // Inicializamos un geocoder básico de Nominatim
+    const nominatimUrl = 'https://nominatim.openstreetmap.org/search';
 
-    // Agregar autocompletado a los campos de origen y destino
+    // Referencias a los elementos de entrada
     const origenInput = document.getElementById('origen');
     const destinoInput = document.getElementById('destino');
 
-    // Configurar evento input para autocompletado de origen
-    origenInput.addEventListener('input', function() {
-        gestionarAutocompletado(this, 'origen');
+    // Estilos para inputs
+    origenInput.placeholder = 'Buscar punto de inicio...';
+    destinoInput.placeholder = 'Buscar destino...';
+    origenInput.parentElement.querySelector('i').className = 'fas fa-search';
+    destinoInput.parentElement.querySelector('i').className = 'fas fa-search';
+
+    // Función para geocodificar una dirección
+    function geocodificarDireccion(direccion, callback) {
+        const params = new URLSearchParams({
+            format: 'json',
+            q: direccion,
+            countrycodes: 'pe',
+            limit: 5,
+            viewbox: '-78,-11,-76,-13',
+            bounded: '1'
+        });
+
+        fetch(`${nominatimUrl}?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                // Transformar los resultados al formato que esperamos
+                const resultados = data.map(item => ({
+                    name: item.display_name,
+                    center: L.latLng(parseFloat(item.lat), parseFloat(item.lon))
+                }));
+                callback(resultados);
+            })
+            .catch(error => {
+                console.error("Error en geocodificación:", error);
+                callback([]);
+            });
+    }
+
+    // Función para geocodificación inversa (obtener dirección desde coordenadas)
+    function geocodificarInverso(latlng, callback) {
+        const params = new URLSearchParams({
+            format: 'json',
+            lat: latlng.lat,
+            lon: latlng.lng,
+            zoom: 18,
+            addressdetails: 1
+        });
+
+        fetch(`https://nominatim.openstreetmap.org/reverse?${params}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.display_name) {
+                    callback({
+                        name: data.display_name,
+                        center: L.latLng(parseFloat(data.lat), parseFloat(data.lon))
+                    });
+                } else {
+                    callback(null);
+                }
+            })
+            .catch(error => {
+                console.error("Error en geocodificación inversa:", error);
+                callback(null);
+            });
+    }
+
+    // Función para procesar cuando se selecciona una ubicación de origen
+    function seleccionarOrigen(resultado) {
+        // Eliminar marcador anterior si existe
+        if (marcadorOrigen) map.removeLayer(marcadorOrigen);
+
+        // Crear nuevo marcador
+        marcadorOrigen = L.marker(resultado.center, {
+            draggable: true,
+            title: 'Origen: ' + resultado.name
+        }).addTo(map);
+
+        // Actualizar campo con nombre del lugar
+        origenInput.value = resultado.name;
+
+        // Centrar mapa y abrir popup
+        map.setView(resultado.center, 14);
+        marcadorOrigen.bindPopup('Origen: ' + resultado.name).openPopup();
+
+        // Ajustar vista si tenemos ambos puntos
+        if (marcadorDestino) {
+            ajustarVistaMapa();
+        }
+    }
+
+    // Función para procesar cuando se selecciona una ubicación de destino
+    function seleccionarDestino(resultado) {
+        // Eliminar marcador anterior si existe
+        if (marcadorDestino) map.removeLayer(marcadorDestino);
+
+        // Crear nuevo marcador
+        marcadorDestino = L.marker(resultado.center, {
+            draggable: true,
+            title: 'Destino: ' + resultado.name
+        }).addTo(map);
+
+        // Actualizar campo con nombre del lugar
+        destinoInput.value = resultado.name;
+
+        // Centrar mapa y abrir popup
+        map.setView(resultado.center, 14);
+        marcadorDestino.bindPopup('Destino: ' + resultado.name).openPopup();
+
+        // Ajustar vista si tenemos ambos puntos
+        if (marcadorOrigen) {
+            ajustarVistaMapa();
+        }
+    }
+    // Actualizar estado del botón de guardar si existe la función
+    if (typeof actualizarEstadoBotonGuardar === 'function') {
+        actualizarEstadoBotonGuardar();
+    }
+
+    // Gestionar evento cuando el usuario presiona Enter en el campo de origen
+    origenInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            if (this.value.trim() === '') return;
+
+            // Buscar la dirección
+            geocodificarDireccion(this.value, resultados => {
+                if (resultados && resultados.length > 0) {
+                    seleccionarOrigen(resultados[0]);
+                }
+            });
+        }
     });
 
-    // Configurar evento input para autocompletado de destino
-    destinoInput.addEventListener('input', function() {
-        gestionarAutocompletado(this, 'destino');
+    // Gestionar evento cuando el usuario presiona Enter en el campo de destino
+    destinoInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+
+            if (this.value.trim() === '') return;
+
+            // Buscar la dirección
+            geocodificarDireccion(this.value, resultados => {
+                if (resultados && resultados.length > 0) {
+                    seleccionarDestino(resultados[0]);
+                }
+            });
+        }
     });
+
+    // Manejar click en el mapa para seleccionar ubicaciones
+    map.on('click', function (e) {
+        const latlng = e.latlng;
+
+        // Realizar geocodificación inversa
+        geocodificarInverso(latlng, resultado => {
+            if (!resultado) {
+                // Si no hay resultado, usar coordenadas directamente
+                resultado = {
+                    name: `${latlng.lat.toFixed(6)}, ${latlng.lng.toFixed(6)}`,
+                    center: latlng
+                };
+            }
+
+            // Determinar si estamos seleccionando origen o destino
+            // Por simplicidad, si no hay origen, seleccionamos origen
+            // Si ya hay origen pero no destino, seleccionamos destino
+            // Si ya hay ambos, seleccionamos origen (y reiniciamos el ciclo)
+            if (!marcadorOrigen) {
+                seleccionarOrigen(resultado);
+            } else if (!marcadorDestino) {
+                seleccionarDestino(resultado);
+            } else {
+                seleccionarOrigen(resultado);
+            }
+        });
+    });
+
+    // Configurar autocompletado para los inputs
+    configurarAutocompletadoSimple(origenInput, destinoInput, geocodificarDireccion, seleccionarOrigen, seleccionarDestino);
 }
+function configurarAutocompletadoSimple(origenInput, destinoInput, geocodificarFn, seleccionarOrigenFn, seleccionarDestinoFn) {
+    // Crear el contenedor de sugerencias
+    const suggestionsContainer = document.createElement('div');
+    suggestionsContainer.className = 'suggestions-container';
+    suggestionsContainer.style.position = 'absolute';
+    suggestionsContainer.style.zIndex = '1000';
+    suggestionsContainer.style.display = 'none';
+    suggestionsContainer.style.backgroundColor = 'white';
+    suggestionsContainer.style.border = '1px solid #ccc';
+    suggestionsContainer.style.borderRadius = '0 0 4px 4px';
+    suggestionsContainer.style.maxHeight = '200px';
+    suggestionsContainer.style.overflowY = 'auto';
+    suggestionsContainer.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+    document.body.appendChild(suggestionsContainer);
 
+    // Variable para rastrear el input actualmente activo
+    let inputActivo = null;
+
+    // Función para mostrar sugerencias
+    function mostrarSugerencias(input, esOrigen) {
+        if (input.value.length < 3) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+
+        // Actualizar inputActivo
+        inputActivo = input;
+
+        // Obtener posición del input
+        const inputRect = input.getBoundingClientRect();
+
+        // Realizar geocodificación para obtener sugerencias
+        geocodificarFn(input.value, resultados => {
+            // Limpiar sugerencias previas
+            suggestionsContainer.innerHTML = '';
+
+            // Si no hay resultados, ocultar
+            if (!resultados || resultados.length === 0) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+
+            // Posicionar contenedor de sugerencias
+            suggestionsContainer.style.display = 'block';
+            suggestionsContainer.style.top = (inputRect.bottom + window.scrollY) + 'px';
+            suggestionsContainer.style.left = (inputRect.left + window.scrollX) + 'px';
+            suggestionsContainer.style.width = inputRect.width + 'px';
+
+            // Añadir cada resultado como una sugerencia
+            resultados.forEach(resultado => {
+                const item = document.createElement('div');
+                item.textContent = resultado.name;
+                item.style.padding = '8px 10px';
+                item.style.cursor = 'pointer';
+                item.style.borderBottom = '1px solid #f0f0f0';
+
+                // Efectos al pasar el ratón
+                item.addEventListener('mouseenter', function () {
+                    this.style.backgroundColor = '#f8f9fa';
+                });
+
+                item.addEventListener('mouseleave', function () {
+                    this.style.backgroundColor = 'white';
+                });
+
+                // Acción al hacer clic en una sugerencia
+                item.addEventListener('click', function () {
+                    // Actualizar input y ocultar sugerencias
+                    input.value = resultado.name;
+                    suggestionsContainer.style.display = 'none';
+
+                    // Seleccionar el punto según corresponda
+                    if (esOrigen) {
+                        seleccionarOrigenFn(resultado);
+                    } else {
+                        seleccionarDestinoFn(resultado);
+                    }
+                });
+
+                suggestionsContainer.appendChild(item);
+            });
+        });
+    }
+
+    // Cerrar sugerencias al hacer clic fuera
+    document.addEventListener('click', function (e) {
+        if (e.target !== origenInput && e.target !== destinoInput && !suggestionsContainer.contains(e.target)) {
+            suggestionsContainer.style.display = 'none';
+        }
+    });
+
+    // Variables para debounce
+    let origenTimeout = null;
+    let destinoTimeout = null;
+
+    // Evento input para origen
+    origenInput.addEventListener('input', function () {
+        clearTimeout(origenTimeout);
+        origenTimeout = setTimeout(() => {
+            mostrarSugerencias(this, true);
+        }, 300);
+    });
+
+    // Evento input para destino
+    destinoInput.addEventListener('input', function () {
+        clearTimeout(destinoTimeout);
+        destinoTimeout = setTimeout(() => {
+            mostrarSugerencias(this, false);
+        }, 300);
+    });
+
+    // Eventos focus para mostrar sugerencias si ya hay texto
+    origenInput.addEventListener('focus', function () {
+        if (this.value.length >= 3) {
+            mostrarSugerencias(this, true);
+        }
+    });
+
+    destinoInput.addEventListener('focus', function () {
+        if (this.value.length >= 3) {
+            mostrarSugerencias(this, false);
+        }
+    });
+
+    // Navegación por teclado en las sugerencias
+    function manejarNavegacionTeclado(e) {
+        // Solo procesar si las sugerencias están visibles
+        if (suggestionsContainer.style.display === 'none') return;
+
+        const items = suggestionsContainer.querySelectorAll('div');
+        if (items.length === 0) return;
+
+        // Encontrar elemento actualmente seleccionado
+        let indiceSeleccionado = Array.from(items).findIndex(
+            item => item.style.backgroundColor === '#f8f9fa' || item.classList.contains('selected')
+        );
+
+        switch (e.key) {
+            case 'ArrowDown':
+                e.preventDefault();
+                // Seleccionar siguiente, o el primero si ninguno está seleccionado
+                indiceSeleccionado = (indiceSeleccionado === -1 || indiceSeleccionado === items.length - 1)
+                    ? 0 : indiceSeleccionado + 1;
+                break;
+
+            case 'ArrowUp':
+                e.preventDefault();
+                // Seleccionar anterior, o el último si ninguno está seleccionado
+                indiceSeleccionado = (indiceSeleccionado === -1 || indiceSeleccionado === 0)
+                    ? items.length - 1 : indiceSeleccionado - 1;
+                break;
+
+            case 'Enter':
+                e.preventDefault();
+                // Si hay un elemento seleccionado, simular clic
+                if (indiceSeleccionado !== -1) {
+                    items[indiceSeleccionado].click();
+                    return;
+                }
+                break;
+
+            case 'Escape':
+                e.preventDefault();
+                suggestionsContainer.style.display = 'none';
+                return;
+
+            default:
+                return;
+        }
+
+        // Actualizar apariencia: quitar selección de todos y aplicar al nuevo
+        items.forEach(item => {
+            item.style.backgroundColor = 'white';
+            item.classList.remove('selected');
+        });
+
+        if (indiceSeleccionado !== -1) {
+            items[indiceSeleccionado].style.backgroundColor = '#f8f9fa';
+            items[indiceSeleccionado].classList.add('selected');
+            // Asegurar que el elemento seleccionado es visible
+            items[indiceSeleccionado].scrollIntoView({ block: 'nearest' });
+        }
+    }
+
+    // Añadir eventos de teclado para navegación
+    origenInput.addEventListener('keydown', manejarNavegacionTeclado);
+    destinoInput.addEventListener('keydown', manejarNavegacionTeclado);
+}
 /**
  * Gestiona el autocompletado de direcciones
  * @param {HTMLInputElement} inputElement - El elemento input que está siendo modificado
@@ -342,7 +697,7 @@ function gestionarAutocompletado(inputElement, tipo) {
     if (inputElement.value.length < 3) return;
 
     // Realizar la búsqueda con el geocoder
-    geocoder.geocode(inputElement.value + ', Lima, Perú', function(results) {
+    geocoder.geocode(inputElement.value + ', Lima, Perú', function (results) {
         // Limpiar cualquier lista de sugerencias existente
         let suggestionsContainer = document.querySelector(`.suggestions-${tipo}`);
         if (suggestionsContainer) {
@@ -365,17 +720,17 @@ function gestionarAutocompletado(inputElement, tipo) {
         suggestionsContainer.style.zIndex = '1000';
 
         // Añadir cada resultado como una opción
-        results.slice(0, 5).forEach(function(result) {
+        results.slice(0, 5).forEach(function (result) {
             const suggestion = document.createElement('div');
             suggestion.textContent = result.name;
             suggestion.style.padding = '10px';
             suggestion.style.borderBottom = '1px solid #eee';
             suggestion.style.cursor = 'pointer';
 
-            suggestion.addEventListener('click', function() {
+            suggestion.addEventListener('click', function () {
                 // Establecer el valor seleccionado en el input
                 inputElement.value = result.name;
-                
+
                 // Si ya existe un marcador para este tipo, eliminarlo
                 if (tipo === 'origen' && marcadorOrigen) {
                     map.removeLayer(marcadorOrigen);
@@ -398,7 +753,7 @@ function gestionarAutocompletado(inputElement, tipo) {
 
                 // Añadir el marcador al mapa
                 marcador.addTo(map);
-                
+
                 // Ajustar la vista del mapa para incluir el nuevo marcador
                 ajustarVistaMapa();
 
@@ -407,11 +762,11 @@ function gestionarAutocompletado(inputElement, tipo) {
             });
 
             // Cambiar estilo al pasar el mouse
-            suggestion.addEventListener('mouseenter', function() {
+            suggestion.addEventListener('mouseenter', function () {
                 this.style.backgroundColor = '#f0f0f0';
             });
 
-            suggestion.addEventListener('mouseleave', function() {
+            suggestion.addEventListener('mouseleave', function () {
                 this.style.backgroundColor = '#fff';
             });
 
@@ -422,7 +777,7 @@ function gestionarAutocompletado(inputElement, tipo) {
         inputElement.parentNode.appendChild(suggestionsContainer);
 
         // Cerrar las sugerencias al hacer clic fuera
-        document.addEventListener('click', function(e) {
+        document.addEventListener('click', function (e) {
             if (!suggestionsContainer.contains(e.target) && e.target !== inputElement) {
                 suggestionsContainer.remove();
             }
@@ -469,25 +824,25 @@ function obtenerCoordenadasRuta() {
         }
     };
 }
- /**
- * Muestra una ruta en el mapa con estilo mejorado
- * @param {Array} rutaGeometry - Array de puntos [lat, lng] que forman la ruta
- * @param {string} colorRuta - Color de la ruta en formato hex
- */
+/**
+* Muestra una ruta en el mapa con estilo mejorado
+* @param {Array} rutaGeometry - Array de puntos [lat, lng] que forman la ruta
+* @param {string} colorRuta - Color de la ruta en formato hex
+*/
 /**
  * Muestra una ruta en el mapa con estilo mejorado y animación
  * @param {Array} rutaGeometry - Array de puntos [lat, lng] que forman la ruta
  * @param {string} colorRuta - Color de la ruta en formato hex
  */
-  
+
 function obtenerRutaVisual() {
     // Obtener coordenadas de origen y destino
     const coordenadas = obtenerCoordenadasRuta();
     if (!coordenadas) return;
-    
+
     // Mostrar mensaje de carga
     mostrarNotificacion('Calculando ruta...', 'info');
-    
+
     // Preparar parámetros para la petición
     const params = new URLSearchParams({
         origen_lat: coordenadas.origen.lat,
@@ -496,7 +851,7 @@ function obtenerRutaVisual() {
         destino_lng: coordenadas.destino.lng,
         modo: modoTransporteActual
     });
-    
+
     // Realizar petición al nuevo endpoint
     fetch(`${API_BASE_URL}/api/ruta-visual?${params}`)
         .then(response => {
@@ -509,13 +864,13 @@ function obtenerRutaVisual() {
             // Extraer las coordenadas para mostrar en el mapa
             if (rutaData.caracteristicas && rutaData.caracteristicas.length > 0) {
                 const coordenadasRuta = rutaData.caracteristicas[0].geometria.coordenadas;
-                
+
                 // Convertir formato [lng, lat] a [lat, lng] para Leaflet
                 const puntos = coordenadasRuta.map(coord => [coord[1], coord[0]]);
-                
+
                 // Mostrar la ruta en el mapa
                 mostrarRuta(puntos, '#3388ff');
-                
+
                 // Si tenemos límites (bounds), ajustar la vista
                 if (rutaData.bounds) {
                     const bounds = [
@@ -524,7 +879,7 @@ function obtenerRutaVisual() {
                     ];
                     map.fitBounds(bounds, { padding: [50, 50] });
                 }
-                
+
                 // Mostrar notificación de éxito
                 mostrarNotificacion('Ruta calculada con éxito', 'success');
             } else {
@@ -551,7 +906,7 @@ function mostrarRuta(puntos, colorRuta = '#3388ff') {
 
     // Crear capa de grupos para contener todos los elementos de la ruta
     rutaLayer = L.layerGroup().addTo(map);
-    
+
     // 1. Crear una línea de "sombra" para dar profundidad
     const lineaSombra = L.polyline(puntos, {
         color: '#000',
@@ -560,7 +915,7 @@ function mostrarRuta(puntos, colorRuta = '#3388ff') {
         lineJoin: 'round',
         lineCap: 'round'
     }).addTo(rutaLayer);
-    
+
     // 2. Crear la línea principal de la ruta
     const lineaPrincipal = L.polyline(puntos, {
         color: colorRuta,
@@ -569,7 +924,7 @@ function mostrarRuta(puntos, colorRuta = '#3388ff') {
         lineJoin: 'round',
         lineCap: 'round'
     }).addTo(rutaLayer);
-    
+
     // 3. Crear una línea de "brillo" para efecto 3D
     const lineaBrillo = L.polyline(puntos, {
         color: '#fff',
@@ -578,22 +933,22 @@ function mostrarRuta(puntos, colorRuta = '#3388ff') {
         lineJoin: 'round',
         lineCap: 'round'
     }).addTo(rutaLayer);
-    
+
     // Ajustar el orden de las capas para una visualización correcta
     lineaSombra.bringToBack();
     lineaPrincipal.bringToFront();
     lineaBrillo.bringToFront();
-    
+
     // Añadir marcadores de inicio y fin con estilo profesional
     if (puntos.length > 1) {
         const puntoInicio = puntos[0];
         const puntoFin = puntos[puntos.length - 1];
         agregarMarcadoresRuta(puntoInicio, puntoFin);
     }
-    
+
     // Añadir flechas de dirección a lo largo de la ruta
     agregarFlechasDireccion(puntos, colorRuta);
-    
+
     // Animar la aparición de la ruta
     animarRuta(lineaPrincipal);
 }
@@ -618,7 +973,7 @@ function agregarMarcadoresRuta(inicio, fin) {
         iconSize: [22, 22],
         iconAnchor: [11, 11]
     });
-    
+
     // Icono para el punto final (pin rojo con sombra)
     const iconoFin = L.divIcon({
         className: 'marcador-fin',
@@ -652,14 +1007,14 @@ function agregarMarcadoresRuta(inicio, fin) {
         iconSize: [22, 34],
         iconAnchor: [11, 34]
     });
-    
+
     // Añadir marcadores al mapa (sin interacción para evitar conflictos)
     L.marker(inicio, {
         icon: iconoInicio,
         interactive: false,
         zIndexOffset: 1000
     }).addTo(rutaLayer);
-    
+
     L.marker(fin, {
         icon: iconoFin,
         interactive: false,
@@ -675,26 +1030,26 @@ function agregarMarcadoresRuta(inicio, fin) {
 function agregarFlechasDireccion(puntos, color) {
     // Determinar cuántas flechas añadir según longitud de la ruta
     const numFlechas = Math.min(5, Math.max(2, Math.floor(puntos.length / 10)));
-    
+
     // Solo añadir flechas si hay suficientes puntos
     if (puntos.length < 10) return;
-    
+
     // Colocar flechas a intervalos regulares a lo largo de la ruta
     for (let i = 1; i <= numFlechas; i++) {
         const idx = Math.floor((puntos.length - 1) * i / (numFlechas + 1));
-        
+
         // Verificar que tengamos suficientes puntos antes y después
         if (idx < 3 || idx >= puntos.length - 3) continue;
-        
+
         // Calcular el ángulo para la flecha usando puntos cercanos
         const p1 = puntos[idx - 3];
         const p2 = puntos[idx + 3];
-        
+
         // Calcular ángulo de la dirección
         const dx = p2[1] - p1[1];
         const dy = p2[0] - p1[0];
         const angulo = Math.atan2(dx, dy) * 180 / Math.PI;
-        
+
         // Crear icono de flecha elegante
         const iconoFlecha = L.divIcon({
             className: 'flecha-direccion',
@@ -709,7 +1064,7 @@ function agregarFlechasDireccion(puntos, color) {
             iconSize: [12, 12],
             iconAnchor: [6, 6]
         });
-        
+
         // Añadir flecha al mapa (sin interacción)
         L.marker(puntos[idx], {
             icon: iconoFlecha,
@@ -728,7 +1083,7 @@ function animarRuta(polyline) {
         opacity: 0,
         weight: polyline.options.weight * 0.5
     });
-    
+
     // Variables para la animación
     let progreso = 0;
     const duracion = 800; // milisegundos 
@@ -738,17 +1093,17 @@ function animarRuta(polyline) {
         opacity: polyline.options.opacity,
         weight: polyline.options.weight
     };
-    
+
     // Función de animación
     const animar = () => {
         progreso += 1 / pasos;
-        
+
         // Actualizar estilo según progreso
         polyline.setStyle({
             opacity: Math.min(1, progreso) * estiloOriginal.opacity,
             weight: (0.5 + Math.min(1, progreso) * 0.5) * estiloOriginal.weight
         });
-        
+
         // Continuar animación o finalizar
         if (progreso < 1) {
             setTimeout(animar, intervalo);
@@ -757,7 +1112,7 @@ function animarRuta(polyline) {
             polyline.setStyle(estiloOriginal);
         }
     };
-    
+
     // Iniciar animación
     setTimeout(animar, 0);
 }
@@ -781,7 +1136,7 @@ function agregarMarcadoresRuta(inicio, fin) {
         iconSize: [22, 22],
         iconAnchor: [11, 11]
     });
-    
+
     // Icono para el punto final (pin rojo con sombra)
     const iconoFin = L.divIcon({
         className: 'marcador-fin',
@@ -815,14 +1170,14 @@ function agregarMarcadoresRuta(inicio, fin) {
         iconSize: [22, 34],
         iconAnchor: [11, 34]
     });
-    
+
     // Añadir marcadores al mapa (sin interacción para evitar conflictos)
     L.marker(inicio, {
         icon: iconoInicio,
         interactive: false,
         zIndexOffset: 1000
     }).addTo(rutaLayer);
-    
+
     L.marker(fin, {
         icon: iconoFin,
         interactive: false,
@@ -838,26 +1193,26 @@ function agregarMarcadoresRuta(inicio, fin) {
 function agregarFlechasDireccion(puntos, color) {
     // Determinar cuántas flechas añadir según longitud de la ruta
     const numFlechas = Math.min(5, Math.max(2, Math.floor(puntos.length / 10)));
-    
+
     // Solo añadir flechas si hay suficientes puntos
     if (puntos.length < 10) return;
-    
+
     // Colocar flechas a intervalos regulares a lo largo de la ruta
     for (let i = 1; i <= numFlechas; i++) {
         const idx = Math.floor((puntos.length - 1) * i / (numFlechas + 1));
-        
+
         // Verificar que tengamos suficientes puntos antes y después
         if (idx < 3 || idx >= puntos.length - 3) continue;
-        
+
         // Calcular el ángulo para la flecha usando puntos cercanos
         const p1 = puntos[idx - 3];
         const p2 = puntos[idx + 3];
-        
+
         // Calcular ángulo de la dirección
         const dx = p2[1] - p1[1];
         const dy = p2[0] - p1[0];
         const angulo = Math.atan2(dx, dy) * 180 / Math.PI;
-        
+
         // Crear icono de flecha elegante
         const iconoFlecha = L.divIcon({
             className: 'flecha-direccion',
@@ -872,7 +1227,7 @@ function agregarFlechasDireccion(puntos, color) {
             iconSize: [12, 12],
             iconAnchor: [6, 6]
         });
-        
+
         // Añadir flecha al mapa (sin interacción)
         L.marker(puntos[idx], {
             icon: iconoFlecha,
@@ -891,7 +1246,7 @@ function animarRuta(polyline) {
         opacity: 0,
         weight: polyline.options.weight * 0.5
     });
-    
+
     // Variables para la animación
     let progreso = 0;
     const duracion = 800; // milisegundos 
@@ -901,17 +1256,17 @@ function animarRuta(polyline) {
         opacity: polyline.options.opacity,
         weight: polyline.options.weight
     };
-    
+
     // Función de animación
     const animar = () => {
         progreso += 1 / pasos;
-        
+
         // Actualizar estilo según progreso
         polyline.setStyle({
             opacity: Math.min(1, progreso) * estiloOriginal.opacity,
             weight: (0.5 + Math.min(1, progreso) * 0.5) * estiloOriginal.weight
         });
-        
+
         // Continuar animación o finalizar
         if (progreso < 1) {
             setTimeout(animar, intervalo);
@@ -920,7 +1275,7 @@ function animarRuta(polyline) {
             polyline.setStyle(estiloOriginal);
         }
     };
-    
+
     // Iniciar animación
     setTimeout(animar, 0);
 }
@@ -932,54 +1287,54 @@ function animarRuta(polyline) {
 function suavizarRutaBezier(ruta) {
     // Si hay menos de 3 puntos, devolver la ruta original
     if (ruta.length < 3) return ruta;
-    
+
     // Array para almacenar la ruta suavizada
     rutaSuavizadaBezier = [];
-    
+
     // Añadir el primer punto tal cual
     rutaSuavizadaBezier.push(ruta[0]);
-    
+
     // Factor de suavizado - mayor número = más puntos interpolados
     const factorSuavizado = 8;
-    
+
     // Factor de curvatura - controla cuánto se curva la línea (0.2 = curva suave)
     const factorCurvatura = 0.2;
-    
+
     // Para cada segmento de la ruta (entre pares de puntos)
     for (let i = 0; i < ruta.length - 1; i++) {
         const p0 = ruta[i];         // Punto actual
         const p1 = ruta[i + 1];     // Siguiente punto
-        
+
         // Determinar puntos de control para la curva de Bézier
         let puntoControl1, puntoControl2;
-        
+
         if (i > 0 && i < ruta.length - 2) {
             // Punto anterior
             const pAnterior = ruta[i - 1];
             // Punto después del siguiente
             const pDespues = ruta[i + 2];
-            
+
             // Calcular vectores de dirección
             const vectorAnterior = [p0[0] - pAnterior[0], p0[1] - pAnterior[1]];
             const vectorSiguiente = [p1[0] - p0[0], p1[1] - p0[1]];
             const vectorDespues = [pDespues[0] - p1[0], pDespues[1] - p1[1]];
-            
+
             // Normalizar vectores
-            const magAnterior = Math.sqrt(vectorAnterior[0]*vectorAnterior[0] + vectorAnterior[1]*vectorAnterior[1]);
-            const magSiguiente = Math.sqrt(vectorSiguiente[0]*vectorSiguiente[0] + vectorSiguiente[1]*vectorSiguiente[1]);
-            const magDespues = Math.sqrt(vectorDespues[0]*vectorDespues[0] + vectorDespues[1]*vectorDespues[1]);
-            
+            const magAnterior = Math.sqrt(vectorAnterior[0] * vectorAnterior[0] + vectorAnterior[1] * vectorAnterior[1]);
+            const magSiguiente = Math.sqrt(vectorSiguiente[0] * vectorSiguiente[0] + vectorSiguiente[1] * vectorSiguiente[1]);
+            const magDespues = Math.sqrt(vectorDespues[0] * vectorDespues[0] + vectorDespues[1] * vectorDespues[1]);
+
             // Evitar divisiones por cero
-            const vecAntNorm = magAnterior === 0 ? [0, 0] : [vectorAnterior[0]/magAnterior, vectorAnterior[1]/magAnterior];
-            const vecSigNorm = magSiguiente === 0 ? [0, 0] : [vectorSiguiente[0]/magSiguiente, vectorSiguiente[1]/magSiguiente];
-            const vecDesNorm = magDespues === 0 ? [0, 0] : [vectorDespues[0]/magDespues, vectorDespues[1]/magDespues];
-            
+            const vecAntNorm = magAnterior === 0 ? [0, 0] : [vectorAnterior[0] / magAnterior, vectorAnterior[1] / magAnterior];
+            const vecSigNorm = magSiguiente === 0 ? [0, 0] : [vectorSiguiente[0] / magSiguiente, vectorSiguiente[1] / magSiguiente];
+            const vecDesNorm = magDespues === 0 ? [0, 0] : [vectorDespues[0] / magDespues, vectorDespues[1] / magDespues];
+
             // Calcular puntos de control basados en los vectores de dirección
             puntoControl1 = [
                 p0[0] + vecSigNorm[0] * magSiguiente * factorCurvatura,
                 p0[1] + vecSigNorm[1] * magSiguiente * factorCurvatura
             ];
-            
+
             puntoControl2 = [
                 p1[0] - vecDesNorm[0] * magSiguiente * factorCurvatura,
                 p1[1] - vecDesNorm[1] * magSiguiente * factorCurvatura
@@ -988,18 +1343,18 @@ function suavizarRutaBezier(ruta) {
             // Para los puntos extremos, usar un cálculo simplificado
             const dx = p1[0] - p0[0];
             const dy = p1[1] - p0[1];
-            
+
             puntoControl1 = [
                 p0[0] + dx * factorCurvatura,
                 p0[1] + dy * factorCurvatura
             ];
-            
+
             puntoControl2 = [
                 p1[0] - dx * factorCurvatura,
                 p1[1] - dy * factorCurvatura
             ];
         }
-        
+
         // Generar puntos intermedios usando curva de Bézier cúbica
         for (let j = 1; j <= factorSuavizado; j++) {
             const t = j / factorSuavizado;
@@ -1007,15 +1362,15 @@ function suavizarRutaBezier(ruta) {
             rutaSuavizadaBezier.push(punto);
         }
     }
-    
+
     // Si no terminamos exactamente en el último punto original, añadirlo
     const ultimoPunto = ruta[ruta.length - 1];
     const ultimoSuavizado = rutaSuavizadaBezier[rutaSuavizadaBezier.length - 1];
-    
+
     if (ultimoPunto[0] !== ultimoSuavizado[0] || ultimoPunto[1] !== ultimoSuavizado[1]) {
         rutaSuavizadaBezier.push(ultimoPunto);
     }
-    
+
     return ruta;
 }
 
@@ -1034,12 +1389,12 @@ function calcularPuntoBezier(p0, p1, p2, p3, t) {
     const mt = 1 - t;
     const mt2 = mt * mt;
     const mt3 = mt2 * mt;
-    
+
     // Fórmula de Bézier cúbica:
     // B(t) = (1-t)^3*P0 + 3(1-t)^2*t*P1 + 3(1-t)*t^2*P2 + t^3*P3
     const lat = mt3 * p0[0] + 3 * mt2 * t * p1[0] + 3 * mt * t2 * p2[0] + t3 * p3[0];
     const lng = mt3 * p0[1] + 3 * mt2 * t * p1[1] + 3 * mt * t2 * p2[1] + t3 * p3[1];
-    
+
     return [lat, lng];
 }
 
@@ -1052,21 +1407,21 @@ function añadirFlechasDireccionMejoradas(ruta, color) {
     // Determinar cuántas flechas añadir basado en la longitud de la ruta
     const numSegmentos = ruta.length;
     const numFlechas = Math.min(8, Math.max(3, Math.floor(numSegmentos / 30)));
-    
+
     // Colocar flechas a intervalos regulares pero evitando inicio y fin
     for (let i = 1; i <= numFlechas; i++) {
         const idx = Math.floor((ruta.length - 1) * i / (numFlechas + 1));
-        
+
         if (idx > 5 && idx < ruta.length - 5) {
             // Obtener puntos antes y después para calcular la dirección
             const p1 = ruta[idx - 5];
             const p2 = ruta[idx + 5];
-            
+
             // Calcular ángulo
             const dx = p2[1] - p1[1];
             const dy = p2[0] - p1[0];
             const angulo = Math.atan2(dx, dy) * 180 / Math.PI;
-            
+
             // Crear marcador con flecha más elegante
             const iconoFlecha = L.divIcon({
                 className: 'ruta-flecha-icon',
@@ -1081,7 +1436,7 @@ function añadirFlechasDireccionMejoradas(ruta, color) {
                 iconSize: [16, 16],
                 iconAnchor: [8, 8]
             });
-            
+
             L.marker(ruta[idx], {
                 icon: iconoFlecha,
                 interactive: false,
@@ -1143,7 +1498,7 @@ function añadirMarcadoresRutaAvanzados(inicio, fin) {
         iconSize: [24, 24],
         iconAnchor: [12, 12]
     });
-    
+
     // Icono de fin (pin con animación de rebote)
     const iconoFin = L.divIcon({
         className: 'ruta-fin-icon',
@@ -1183,19 +1538,19 @@ function añadirMarcadoresRutaAvanzados(inicio, fin) {
         iconSize: [24, 36],
         iconAnchor: [12, 36]
     });
-    
+
     // Añadir marcadores con títulos
     L.marker(inicio, {
         icon: iconoInicio,
         title: 'Punto de partida'
-    }).addTo(rutaLayer).bindTooltip("Punto de partida", 
-        {permanent: false, direction: 'top', offset: [0, -15]});
-    
+    }).addTo(rutaLayer).bindTooltip("Punto de partida",
+        { permanent: false, direction: 'top', offset: [0, -15] });
+
     L.marker(fin, {
         icon: iconoFin,
         title: 'Destino'
-    }).addTo(rutaLayer).bindTooltip("Destino", 
-        {permanent: false, direction: 'top', offset: [0, -30]});
+    }).addTo(rutaLayer).bindTooltip("Destino",
+        { permanent: false, direction: 'top', offset: [0, -30] });
 }
 
 /**
@@ -1206,45 +1561,45 @@ function añadirMarcadoresRutaAvanzados(inicio, fin) {
 function resaltarPuntosGiro(ruta, colorBase) {
     // Umbral para considerar un cambio de dirección significativo (en grados)
     const umbralCambioGrados = 30;
-    
+
     // Array para almacenar los puntos de giro
     const puntosGiro = [];
-    
+
     // Detectar cambios significativos de dirección
     // Necesitamos al menos 3 puntos consecutivos para calcular ángulos
     if (ruta.length > 20) {
         // Saltar algunos puntos para no evaluar cada pequeño cambio
         const paso = Math.max(5, Math.floor(ruta.length / 50));
-        
+
         for (let i = paso; i < ruta.length - paso; i += paso) {
             // Calcular vectores entre puntos
             const puntoAnterior = ruta[i - paso];
             const puntoActual = ruta[i];
             const puntoSiguiente = ruta[i + paso];
-            
+
             // Vectores de los segmentos
             const vector1 = [
                 puntoActual[0] - puntoAnterior[0],
                 puntoActual[1] - puntoAnterior[1]
             ];
-            
+
             const vector2 = [
                 puntoSiguiente[0] - puntoActual[0],
                 puntoSiguiente[1] - puntoActual[1]
             ];
-            
+
             // Calcular el ángulo entre los vectores usando el producto punto
             const dotProduct = vector1[0] * vector2[0] + vector1[1] * vector2[1];
             const mag1 = Math.sqrt(vector1[0] * vector1[0] + vector1[1] * vector1[1]);
             const mag2 = Math.sqrt(vector2[0] * vector2[0] + vector2[1] * vector2[1]);
-            
+
             // Evitar divisiones por cero
             if (mag1 === 0 || mag2 === 0) continue;
-            
+
             // Calcular el coseno del ángulo y convertir a grados
             const cosTheta = Math.min(1, Math.max(-1, dotProduct / (mag1 * mag2)));
             const angulo = Math.acos(cosTheta) * 180 / Math.PI;
-            
+
             // Si el ángulo es mayor que el umbral, considerar como punto de giro
             if (angulo > umbralCambioGrados) {
                 puntosGiro.push({
@@ -1254,19 +1609,19 @@ function resaltarPuntosGiro(ruta, colorBase) {
             }
         }
     }
-    
+
     // Limitar a los puntos de giro más significativos si hay demasiados
     puntosGiro.sort((a, b) => b.angulo - a.angulo); // Ordenar por ángulo (mayor primero)
     const puntosAMostrar = puntosGiro.slice(0, 5); // Mostrar solo los 5 giros más importantes
-    
+
     // Añadir puntos de giro al mapa
     puntosAMostrar.forEach(item => {
         // Normalizar ángulo para determinar tamaño del punto (giros más bruscos = puntos más grandes)
         const tamañoNormalizado = Math.min(8, Math.max(4, (item.angulo / 180) * 8 + 2));
-        
+
         // Color más oscuro que el de la ruta
         const colorMásOscuro = oscurecerColor(colorBase, 0.3);
-        
+
         // Círculo para marcar la intersección
         L.circleMarker(item.punto, {
             radius: tamañoNormalizado,
@@ -1289,30 +1644,30 @@ function animarRuta(polyline) {
         weight: polyline.options.weight,
         opacity: polyline.options.opacity
     };
-    
+
     // Función para animar la entrada de la ruta
     let contador = 0;
     const maxPasos = 100;
     const intervalo = 10; // ms entre pasos de animación
-    
+
     // Iniciar invisible
     polyline.setStyle({
         opacity: 0,
         weight: estiloOriginal.weight * 0.5
     });
-    
+
     const animacion = setInterval(() => {
         contador++;
-        
+
         // Calcular progreso de la animación (0 a 1)
         const progreso = contador / maxPasos;
-        
+
         // Animar la ruta
         polyline.setStyle({
             opacity: progreso * estiloOriginal.opacity,
             weight: (0.5 + progreso * 0.5) * estiloOriginal.weight
         });
-        
+
         // Detener cuando se complete
         if (contador >= maxPasos) {
             clearInterval(animacion);
@@ -1331,26 +1686,26 @@ function animarRuta(polyline) {
 function oscurecerColor(color, factor) {
     // Eliminar el # si existe
     color = color.replace('#', '');
-    
+
     // Convertir a RGB
     let r = parseInt(color.substring(0, 2), 16);
     let g = parseInt(color.substring(2, 4), 16);
     let b = parseInt(color.substring(4, 6), 16);
-    
+
     // Oscurecer
     r = Math.floor(r * (1 - factor));
     g = Math.floor(g * (1 - factor));
     b = Math.floor(b * (1 - factor));
-    
+
     // Asegurar que los valores estén en el rango correcto
     r = Math.min(255, Math.max(0, r));
     g = Math.min(255, Math.max(0, g));
     b = Math.min(255, Math.max(0, b));
-    
+
     // Convertir de nuevo a hex
-    return '#' + 
-        r.toString(16).padStart(2, '0') + 
-        g.toString(16).padStart(2, '0') + 
+    return '#' +
+        r.toString(16).padStart(2, '0') +
+        g.toString(16).padStart(2, '0') +
         b.toString(16).padStart(2, '0');
 }
 
@@ -1363,20 +1718,20 @@ function oscurecerColor(color, factor) {
 function suavizarRuta(ruta, factorSuavizado = 3) {
     // Si la ruta tiene menos de 3 puntos, no podemos suavizarla adecuadamente
     if (ruta.length < 3) return ruta;
-    
+
     // Resultado final
     const rutaSuavizada = [];
-    
+
     // Añadir el primer punto tal cual
     rutaSuavizada.push(ruta[0]);
-    
+
     // Para cada segmento de la ruta (entre dos puntos)
     for (let i = 0; i < ruta.length - 2; i++) {
         const p0 = i > 0 ? ruta[i - 1] : ruta[i];     // Punto anterior o actual si estamos en el primero
         const p1 = ruta[i];                           // Punto actual
         const p2 = ruta[i + 1];                       // Siguiente punto
         const p3 = i < ruta.length - 2 ? ruta[i + 2] : ruta[i + 1]; // Punto después del siguiente o último si estamos al final
-        
+
         // Generar puntos intermedios usando una curva de Catmull-Rom
         for (let j = 1; j <= factorSuavizado; j++) {
             const t = j / factorSuavizado;
@@ -1384,11 +1739,11 @@ function suavizarRuta(ruta, factorSuavizado = 3) {
             rutaSuavizada.push(punto);
         }
     }
-    
+
     // Añadir los últimos dos puntos
     rutaSuavizada.push(ruta[ruta.length - 2]);
     rutaSuavizada.push(ruta[ruta.length - 1]);
-    
+
     return rutaSuavizada;
 }
 
@@ -1404,17 +1759,17 @@ function suavizarRuta(ruta, factorSuavizado = 3) {
 function calcularPuntoCurva(p0, p1, p2, p3, t) {
     const t2 = t * t;
     const t3 = t2 * t;
-    
+
     // Coeficientes Catmull-Rom
     const c0 = -0.5 * t3 + t2 - 0.5 * t;
     const c1 = 1.5 * t3 - 2.5 * t2 + 1;
     const c2 = -1.5 * t3 + 2 * t2 + 0.5 * t;
     const c3 = 0.5 * t3 - 0.5 * t2;
-    
+
     // Calcular coordenadas usando los coeficientes
     const lat = c0 * p0[0] + c1 * p1[0] + c2 * p2[0] + c3 * p3[0];
     const lng = c0 * p0[1] + c1 * p1[1] + c2 * p2[1] + c3 * p3[1];
-    
+
     return [lat, lng];
 }
 
@@ -1426,19 +1781,19 @@ function calcularPuntoCurva(p0, p1, p2, p3, t) {
 function añadirFlechasDireccion(ruta, color) {
     // Determinar cuántas flechas añadir basado en la longitud de la ruta
     const numFlechas = Math.min(5, Math.max(2, Math.floor(ruta.length / 10)));
-    
+
     // Colocar flechas a intervalos regulares
     for (let i = 1; i <= numFlechas; i++) {
         const idx = Math.floor((ruta.length - 1) * i / (numFlechas + 1));
         if (idx > 0 && idx < ruta.length - 1) {
             const p1 = ruta[idx - 1];
             const p2 = ruta[idx + 1];
-            
+
             // Calcular ángulo
             const dx = p2[1] - p1[1];
             const dy = p2[0] - p1[0];
             const angulo = Math.atan2(dx, dy) * 180 / Math.PI;
-            
+
             // Crear marcador con flecha
             const iconoFlecha = L.divIcon({
                 className: 'ruta-flecha-icon',
@@ -1450,7 +1805,7 @@ function añadirFlechasDireccion(ruta, color) {
                 iconSize: [12, 12],
                 iconAnchor: [6, 6]
             });
-            
+
             L.marker(ruta[idx], {
                 icon: iconoFlecha,
                 interactive: false,
@@ -1485,7 +1840,7 @@ function añadirMarcadoresRuta(inicio, fin) {
         iconSize: [20, 20],
         iconAnchor: [10, 10]
     });
-    
+
     // Icono de fin (bandera o pin rojo)
     const iconoFin = L.divIcon({
         className: 'ruta-fin-icon',
@@ -1500,13 +1855,13 @@ function añadirMarcadoresRuta(inicio, fin) {
         iconSize: [20, 20],
         iconAnchor: [10, 20]
     });
-    
+
     // Añadir marcadores
     L.marker(inicio, {
         icon: iconoInicio,
         title: 'Inicio'
     }).addTo(rutaLayer);
-    
+
     L.marker(fin, {
         icon: iconoFin,
         title: 'Destino'
@@ -1521,9 +1876,9 @@ function añadirMarcadoresRuta(inicio, fin) {
 function resaltarInterseccionesImportantes(ruta, colorBase) {
     // Identificar puntos donde hay cambios significativos de dirección
     // (simplificado - en una implementación real verificaríamos datos reales de intersecciones)
-    
+
     const intersecciones = [];
-    
+
     // Detectar cambios significativos de dirección
     if (ruta.length > 5) {
         for (let i = 2; i < ruta.length - 2; i += Math.floor(ruta.length / 8)) {
@@ -1532,7 +1887,7 @@ function resaltarInterseccionesImportantes(ruta, colorBase) {
             intersecciones.push(ruta[i]);
         }
     }
-    
+
     // Añadir puntos de intersección al mapa
     intersecciones.forEach(punto => {
         // Círculo para marcar la intersección
@@ -1603,14 +1958,14 @@ function mostrarPuntosSeguridadEnRuta(puntos) {
 
         // Crear marcador con el icono correspondiente
         const marcador = L.marker([punto.lat, punto.lng], { icon: icono });
-        
+
         // Añadir popup con información
         marcador.bindPopup(`
             <strong>${punto.nombre}</strong><br>
             ${punto.descripcion || ''}<br>
             <small>Distancia a la ruta: ${punto.distancia} metros</small>
         `);
-        
+
         // Añadir al layer group
         marcador.addTo(securityPointsLayer);
     });
@@ -1633,7 +1988,7 @@ function actualizarListaPuntosSeguridadUI(puntos) {
     // Añadir los 5 puntos más cercanos
     puntos.slice(0, 5).forEach(punto => {
         const elemento = document.createElement('li');
-        
+
         // Añadir icono según tipo
         let iconoClass;
         switch (punto.tipo) {
@@ -1643,7 +1998,7 @@ function actualizarListaPuntosSeguridadUI(puntos) {
             case 'incidente': iconoClass = 'fa-exclamation-triangle'; break;
             default: iconoClass = 'fa-info-circle';
         }
-        
+
         elemento.innerHTML = `<i class="fas ${iconoClass}"></i> ${punto.nombre} <small>(${punto.distancia}m)</small>`;
         listaElemento.appendChild(elemento);
     });
@@ -1673,11 +2028,11 @@ function cargarPuntosSeguridadIniciales() {
 function abrirModalReporte(latlng) {
     // Guardar las coordenadas para usar al enviar el formulario
     window.incidenteLatLng = latlng;
-    
+
     // Mostrar el modal
     const modal = document.getElementById('report-incident');
     modal.classList.remove('hidden');
-    
+
     // Establecer la fecha y hora actual en el formulario
     const fechaInput = document.getElementById('incident-date');
     const ahora = new Date();
@@ -1696,7 +2051,7 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
     const notificacion = document.createElement('div');
     notificacion.className = `notificacion ${tipo}`;
     notificacion.textContent = mensaje;
-    
+
     // Estilos inline para la notificación
     notificacion.style.position = 'fixed';
     notificacion.style.top = '20px';
@@ -1706,7 +2061,7 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
     notificacion.style.zIndex = '9999';
     notificacion.style.maxWidth = '300px';
     notificacion.style.boxShadow = '0 3px 6px rgba(0,0,0,0.16)';
-    
+
     // Establecer color según tipo
     if (tipo === 'success') {
         notificacion.style.backgroundColor = '#4CAF50';
@@ -1721,15 +2076,15 @@ function mostrarNotificacion(mensaje, tipo = 'info') {
         notificacion.style.backgroundColor = '#2196F3';
         notificacion.style.color = 'white';
     }
-    
+
     // Añadir al DOM
     document.body.appendChild(notificacion);
-    
+
     // Eliminar después de 3 segundos
     setTimeout(() => {
         notificacion.style.opacity = '0';
         notificacion.style.transition = 'opacity 0.5s ease';
-        
+
         setTimeout(() => {
             document.body.removeChild(notificacion);
         }, 500);

@@ -301,3 +301,230 @@ footer {
         min-width: 100%;
     }
 }
+/* Estilos para que los inputs se parezcan al Control.Geocoder de Leaflet */
+.input-group input {
+    width: 100%;
+    padding: 10px 10px 10px 35px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    height: 38px; /* Altura similar a Leaflet Geocoder */
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Contenedor para las sugerencias de autocompletado */
+.suggestions-container {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Estilo para cada elemento de sugerencia */
+.suggestions-container div {
+    padding: 8px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestions-container div:hover {
+    background-color: #f8f9fa;
+}
+
+.suggestions-container div:last-child {
+    border-bottom: none;
+}
+
+/* Estilos para marcar el ítem seleccionado */
+.suggestions-container div.selected {
+    background-color: #e9ecef;
+}
+
+/* Estilos para los favoritos */
+.favorites-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    width: 100%;
+    justify-content: center;
+}
+
+.btn-favorite {
+    padding: 8px 12px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.btn-favorite:hover {
+    background-color: var(--light-color);
+    border-color: var(--primary-color);
+}
+
+#save-route {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#save-route:hover {
+    background-color: #3d8b40;
+}
+
+#save-route.disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    position: absolute;
+    background-color: white;
+    min-width: 250px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    border-radius: var(--border-radius);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    top: 100%;
+    right: 0;
+}
+
+.dropdown-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    color: var(--text-color);
+    cursor: pointer;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item .route-name {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-item .actions {
+    display: flex;
+    gap: 5px;
+}
+
+.dropdown-item .actions button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    padding: 4px;
+}
+
+.dropdown-item .actions button:hover {
+    color: var(--primary-color);
+}
+
+.dropdown-item .actions .delete-route:hover {
+    color: var(--danger-color);
+}
+
+.empty-favorites {
+    padding: 15px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+/* Estilos adicionales para la implementación con API */
+.loading-favorites, 
+.error-favorites {
+    padding: 15px;
+    text-align: center;
+    color: #666;
+}
+
+.loading-favorites::before {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 8px;
+    border: 2px solid #ddd;
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.error-favorites {
+    color: var(--danger-color);
+}
+
+.dropdown-item.deleting {
+    opacity: 0.6;
+    background-color: #f8f8f8;
+}
+
+.loading-delete {
+    color: #999;
+    text-align: center;
+    font-style: italic;
+}
+
+.route-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.route-date {
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+}
+
+#save-route .fa-spinner {
+    animation: spin 1s linear infinite;
+}
+
+/* Animación para añadir/eliminar de la lista */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdown-item {
+    animation: fadeIn 0.3s ease-out forwards;
+}
