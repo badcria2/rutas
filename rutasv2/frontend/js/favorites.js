@@ -39,7 +39,7 @@ function cargarFavoritosDesdeAPI() {
     favoritesList.innerHTML = '<div class="loading-favorites">Cargando rutas guardadas...</div>';
     
     // Realizar petición a la API
-    fetch(`http://localhost:3000/api/ruta-favorita`)
+    fetch(`${API_BASE_URL}/api/ruta-favorita`)
         .then(response => {
             if (!response.ok) {
                 throw new Error(`Error al cargar rutas favoritas: ${response.status}`);
@@ -117,7 +117,7 @@ function guardarRutaActual() {
     };
     
     // Enviar a la API
-    fetch(`http://localhost:3000/api/ruta-favorita`, {
+    fetch(`${API_BASE_URL}/api/ruta-favorita`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -270,7 +270,7 @@ function eliminarRutaFavorita(id) {
         }
         
         // Enviar solicitud a la API
-        fetch(`http://localhost:3000/api/ruta-favorita/${id}`, {
+        fetch(`${API_BASE_URL}/api/ruta-favorita/${id}`, {
             method: 'DELETE'
         })
         .then(response => {
