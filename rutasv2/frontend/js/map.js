@@ -150,10 +150,10 @@ function habilitarSeleccionPuntosEnMapa() {
     panelControl.appendChild(mensajeAyuda);
 
     // Añadir al DOM
-    document.getElementById('map').appendChild(panelControl);
+    //document.getElementById('map').appendChild(panelControl);
 
     // Añadir evento de clic al mapa
-    map.on('click', function (e) {
+   /* map.on('click', function (e) {
         // Obtener coordenadas del clic
         const lat = e.latlng.lat;
         const lng = e.latlng.lng;
@@ -223,7 +223,7 @@ function habilitarSeleccionPuntosEnMapa() {
         if (marcadorOrigen && marcadorDestino) {
             ajustarVistaMapa();
         }
-    });
+    });*/
 }
 
 // Llama a esta función al final de inicializarMapa() 
@@ -469,7 +469,7 @@ function inicializarGeocoder() {
     });
 
     // Manejar click en el mapa para seleccionar ubicaciones
-    map.on('click', function (e) {
+ /*   map.on('click', function (e) {
         const latlng = e.latlng;
 
         // Realizar geocodificación inversa
@@ -495,7 +495,7 @@ function inicializarGeocoder() {
             }
         });
     });
-
+*/
     // Configurar autocompletado para los inputs
     configurarAutocompletadoSimple(origenInput, destinoInput, geocodificarDireccion, seleccionarOrigen, seleccionarDestino);
 }
