@@ -3,73 +3,48 @@
  * Punto de entrada principal para el servidor backend de la aplicación Rutas Seguras Lima
  */
 
+// Importar módulos externos
 const express = require('express');
 const path = require('path');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const { Pool } = require('pg'); // PostgreSQL client
-const axios = require('axios'); // Para llamadas a OpenRouteService API
-require('dotenv').config(); // Para cargar variables de entorno desde .env
+require('dotenv').config();
 
-// Importar rutas API
-const apiRoutes = require('./routes/api');
+// Importar configuraciones
+const serverConfig = require('./config/server.config');
+const dbConfig = require('./config/db.config');
+
+// Importar base de datos
+const db = require('./db/db');
+
+// Importar middleware
+const { notFoundHandler, errorHandler } = require('./middleware/error.middleware');
+
+// Importar rutas
+const apiRoutes = require('./routes/index');
 
 // Configuración del servidor
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = serverConfig.port;
 
 // Middleware
-app.use(cors()); // Habilitar CORS
-app.use(bodyParser.json()); // Parsear peticiones JSON
-app.use(express.static(path.join(__dirname, '../frontend'))); // Servir archivos estáticos
-
-// Conexión a PostgreSQL
-const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'security_db',
-    password: process.env.DB_PASSWORD || 'postgres',
-    port: process.env.DB_PORT || 5432,
-});
-
-// Comprobar conexión a la base de datos
-pool.query('SELECT NOW()', (err, res) => {
-    if (err) {
-        console.error('Error conectando a PostgreSQL:', err);
-    } else {
-        console.log('Conexión a PostgreSQL establecida con éxito');
-    }
-});
-
-// Hacer disponible la conexión a la base de datos para las rutas
-app.locals.db = pool;
-
-// Configurar token de OpenRouteService
-app.locals.openRouteServiceApiKey = process.env.OPENROUTE_API_KEY || ''; // Token de acceso a OpenRouteService
+app.use(cors(serverConfig.corsOptions));
+app.use(bodyParser.json());
+app.use(express.static(serverConfig.staticFolder));
 
 // Rutas API
-app.use('/api', apiRoutes);   
+app.use('/api', apiRoutes);
 
-// Servir archivos estáticos desde la carpeta frontend
-app.use(express.static(path.join(__dirname, '../frontend')));
 // Ruta principal sirve la aplicación
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+    res.sendFile(path.join(serverConfig.staticFolder, 'index.html'));
 });
 
-// Manejar rutas no encontradas
-app.use((req, res) => {
-    res.status(404).json({ error: 'Ruta no encontrada' });
-});
+// Middleware para manejar rutas no encontradas
+app.use(notFoundHandler);
 
-// Manejador de errores global
-app.use((err, req, res, next) => {
-    console.error('Error:', err.stack);
-    res.status(500).json({ 
-        error: 'Error interno del servidor',
-        message: process.env.NODE_ENV === 'development' ? err.message : 'Ocurrió un error inesperado'
-    });
-});
+// Middleware para manejo de errores
+app.use(errorHandler);
 
 // Iniciar el servidor
 app.listen(PORT, () => {

@@ -4,19 +4,18 @@
  */
 
 const { Pool } = require('pg');
+const dbConfig = require('../config/db.config');
 require('dotenv').config();
+
+// Verificamos si estamos en un entorno local o de producción para configurar SSL
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Configuración de la conexión a PostgreSQL
 const pool = new Pool({
-    user: process.env.DB_USER || 'postgres',
-    host: process.env.DB_HOST || 'localhost',
-    database: process.env.DB_NAME || 'security_db',
-    password: process.env.DB_PASSWORD ||'85857855pepito',
-    port: process.env.DB_PORT || 5432,
-    ssl:{ rejectUnauthorized: false }
-
+    ...dbConfig,
+    // Deshabilitar SSL para desarrollo local, configurar para producción
+    ssl: isProduction ? { rejectUnauthorized: false } : false
 });
-
 
 // Verificar la conexión a la base de datos
 pool.query('SELECT NOW()', (err) => {
@@ -111,12 +110,6 @@ async function getIncidentes(lat, lng, radiusMeters = 500) {
  * @param {number} bufferMeters - Buffer en metros a cada lado de la línea
  * @returns {Promise<Object>} - Objeto con puntos de seguridad e incidentes
  */
-/**
-* Obtiene puntos de seguridad e incidentes a lo largo de una línea (ruta)
-* @param {Array} coordinates - Array de coordenadas [lng, lat] que forman la ruta
-* @param {number} bufferMeters - Buffer en metros a cada lado de la línea
-* @returns {Promise<Object>} - Objeto con puntos de seguridad e incidentes
-*/
 async function getPuntosEnRuta(coordinates, bufferMeters = 200) {
     try {
         // Verificar que coordinates sea un array válido
@@ -129,7 +122,6 @@ async function getPuntosEnRuta(coordinates, bufferMeters = 200) {
             };
         }
  
-
         // Consulta para obtener puntos de seguridad cerca de la ruta
         // Crear el formato de LINESTRING
         const lineString = `LINESTRING(${coordinates.reduce((acc, _, i) => {
@@ -197,7 +189,6 @@ async function getPuntosEnRuta(coordinates, bufferMeters = 200) {
             pool.query(incidentesQuery, [lineString, bufferMeters])
         ]);
 
-
         return {
             puntosSeguridad: seguridadResult.rows,
             incidentes: incidentesResult.rows
@@ -213,11 +204,6 @@ async function getPuntosEnRuta(coordinates, bufferMeters = 200) {
         };
     }
 }
-/**
- * Calcula el índice de seguridad para una ruta basado en los puntos cercanos
- * @param {Array} coordinates - Array de coordenadas [lng, lat] que forman la ruta
- * @returns {Promise<number>} - Índice de seguridad (0-100)
- */
 
 /**
  * Calcula el índice de seguridad para una ruta basado en los puntos cercanos
@@ -315,10 +301,6 @@ async function registrarIncidente(incidenteData) {
         throw error;
     }
 }
-/**
- * Funciones adicionales para manejar rutas favoritas en db.js
- * Añade estas funciones a tu archivo db.js existente
- */
 
 /**
  * Obtiene todas las rutas favoritas de un usuario
@@ -635,21 +617,17 @@ async function eliminarRutaFavorita(rutaId) {
     }
 }
 
-// Asegúrate de exportar las nuevas funciones
+// Asegúrate de exportar todas las funciones
 module.exports = {
-    // Funciones existentes...
     query: (text, params) => pool.query(text, params),
     getPuntosSeguridad,
     getIncidentes,
     getPuntosEnRuta,
     calcularIndiceSeguridad,
     registrarIncidente,
-    
-    // Nuevas funciones para rutas favoritas
     getRutasFavoritas,
     getRutaFavoritaPorId,
     guardarRutaFavorita,
     actualizarRutaFavorita,
     eliminarRutaFavorita
 };
- 
