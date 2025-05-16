@@ -1,0 +1,13 @@
+/* Variables globales */
+:root {
+    --primary-color: #4CAF50;
+    --secondary-color: #2196F3;
+    --danger-color: #f44336;
+    --warning-color: #ff9800;
+    --success-color: #8bc34a;
+    --text-color: #333;
+    --light-color: #f5f5f5;
+    --dark-color: #333;
+    --border-radius: 4px;
+    --box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}

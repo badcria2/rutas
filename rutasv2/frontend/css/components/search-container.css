@@ -1,0 +1,50 @@
+.search-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+}
+
+.transport-options {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+
+/* Contenedor para las sugerencias de autocompletado */
+.suggestions-container {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+/* Estilo para cada elemento de sugerencia */
+.suggestions-container div {
+    padding: 8px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.suggestions-container div:hover {
+    background-color: #f8f9fa;
+}
+
+.suggestions-container div:last-child {
+    border-bottom: none;
+}
+
+/* Estilos para marcar el ítem seleccionado */
+.suggestions-container div.selected {
+    background-color: #e9ecef;
+}

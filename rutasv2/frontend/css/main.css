@@ -1,0 +1,18 @@
+/* Importación de todos los módulos CSS */
+
+/* Base */
+@import url('base/variables.css');
+@import url('base/reset.css');
+
+/* Layout */
+@import url('layout/layout.css');
+
+/* Componentes */
+@import url('components/buttons.css');
+@import url('components/inputs.css');
+@import url('components/route-info.css');
+@import url('components/search-container.css');
+@import url('components/modals.css');
+@import url('components/favorites.css');
+@import url('components/notifications.css');
+@import url('components/incidents.css');

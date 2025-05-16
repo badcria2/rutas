@@ -1,0 +1,56 @@
+.input-group {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 200px;
+    position: relative;
+}
+
+.input-group i {
+    position: absolute;
+    left: 10px;
+    color: #666;
+    z-index: 5;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 10px 10px 10px 35px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+    height: 38px; /* Altura similar a Leaflet Geocoder */
+    box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+    transition: all 0.2s ease-in-out;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+}
+
+/* Estilos para cuando se está realizando una búsqueda */
+.input-group.searching input {
+    background-color: #f5f5f5;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    font-size: 16px;
+}

@@ -1,0 +1,112 @@
+.btn-buscar {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-buscar:hover {
+    background-color: #3d8b40;
+}
+
+.modo-transporte {
+    padding: 10px 15px;
+    background-color: #f0f0f0;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.modo-transporte:hover {
+    background-color: #e0e0e0;
+}
+
+.modo-transporte.activo {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.btn-report {
+    padding: 10px 20px;
+    background-color: var(--warning-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 16px;
+    margin-bottom: 15px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-report:hover {
+    background-color: #e68900;
+}
+
+.btn-submit {
+    padding: 10px 20px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-submit:hover {
+    background-color: #3d8b40;
+}
+
+.btn-favorite {
+    padding: 8px 12px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.btn-favorite:hover {
+    background-color: var(--light-color);
+    border-color: var(--primary-color);
+}
+
+#save-route {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+#save-route:hover {
+    background-color: #3d8b40;
+}
+
+#save-route.disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Botón para reportar en el mapa */
+.btn-report-here {
+    padding: 5px 10px;
+    background-color: var(--warning-color);
+    color: white;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-report-here:hover {
+    background-color: #e68900;
+}

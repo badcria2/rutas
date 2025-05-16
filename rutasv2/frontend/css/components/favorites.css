@@ -1,0 +1,112 @@
+.favorites-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    width: 100%;
+    justify-content: center;
+}
+
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    position: absolute;
+    background-color: white;
+    min-width: 250px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    border-radius: var(--border-radius);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+    top: 100%;
+    right: 0;
+}
+
+.dropdown-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    color: var(--text-color);
+    cursor: pointer;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item .route-name {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dropdown-item .actions {
+    display: flex;
+    gap: 5px;
+}
+
+.dropdown-item .actions button {
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    padding: 4px;
+}
+
+.dropdown-item .actions button:hover {
+    color: var(--primary-color);
+}
+
+.dropdown-item .actions .delete-route:hover {
+    color: var(--danger-color);
+}
+
+.empty-favorites {
+    padding: 15px;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+}
+
+.loading-favorites, 
+.error-favorites {
+    padding: 15px;
+    text-align: center;
+    color: #666;
+}
+
+.loading-favorites::before {
+    content: '';
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin-right: 8px;
+    border: 2px solid #ddd;
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+.dropdown-item.deleting {
+    opacity: 0.6;
+    background-color: #f8f8f8;
+}
+
+.loading-delete {
+    color: #999;
+    text-align: center;
+    font-style: italic;
+}
+
+.route-date {
+    font-size: 11px;
+    color: #999;
+    margin-top: 2px;
+}
