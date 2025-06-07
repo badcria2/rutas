@@ -47,7 +47,7 @@ async function getPuntosSeguridad(lat, lng, radiusMeters = 500) {
                 ST_Distance(
                     ubicacion::geography, 
                     ST_SetSRID(ST_MakePoint($2, $1), 4326)::geography
-                ) as distancia
+                ) as distancia , contacto
             FROM puntos_seguridad
             WHERE ST_DWithin(
                 ubicacion::geography,
@@ -145,7 +145,7 @@ async function getPuntosEnRuta(coordinates, bufferMeters = 200) {
                 ST_Distance(
                     ubicacion::geography, 
                     ST_GeomFromText($1, 4326)::geography
-                ) as distancia
+                ) as distancia, contacto
             FROM puntos_seguridad
             WHERE ST_DWithin(
                 ubicacion::geography,

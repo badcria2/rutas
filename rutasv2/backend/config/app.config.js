@@ -8,7 +8,7 @@ require('dotenv').config();
 const config = {
     // Configuración de OpenRouteService
     openRouteService: {
-        apiKey: process.env.OPENROUTE_API_KEY || '5b3ce3597851110001cf62485bae0162dc5e4090a9353097b62bb6ae',
+        apiKey: process.env.OPENROUTE_API_KEY || '5b3ce3597851110001cf624800c75ecee995871d6444db4f917adebc41cc19a473cc7fe50f0a56c2',
         baseUrl: 'https://api.openrouteservice.org/v2'
     },
     

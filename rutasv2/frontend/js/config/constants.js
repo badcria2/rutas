@@ -5,7 +5,7 @@
 
 // API endpoints configuration
 export const API = {
-    BASE_URL: 'https://rutas-rywi.onrender.com',
+    BASE_URL: 'http://localhost:3000',
     ENDPOINTS: {
       ROUTE: '/api/ruta-visual',
       FAVORITES: '/api/ruta-favorita',

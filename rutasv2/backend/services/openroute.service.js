@@ -14,7 +14,7 @@ if (!appConfig.openRouteService) {
     console.error('===============================================');
     // Crear la configuración mínima necesaria para que el servicio funcione
     appConfig.openRouteService = {
-        apiKey: process.env.OPENROUTE_API_KEY || '5b3ce3597851110001cf62485bae0162dc5e4090a9353097b62bb6ae',
+        apiKey: process.env.OPENROUTE_API_KEY || '5b3ce3597851110001cf624800c75ecee995871d6444db4f917adebc41cc19a473cc7fe50f0a56c2',
         baseUrl: 'https://api.openrouteservice.org/v2'
     };
 }
@@ -32,12 +32,19 @@ const ORS_BASE_URL = appConfig.openRouteService.baseUrl;
  */
 async function obtenerRuta(origen, destino, modo) {
     try {
+        console.log('=== OBTENIENDO RUTA DE OPENROUTESERVICE ===');
+        console.log('Origen:', origen);
+        console.log('Destino:', destino);
+        console.log('Modo:', modo);
+        
         // Preparar las coordenadas para la petición
         // OpenRouteService usa [longitud, latitud] en lugar de [latitud, longitud]
         const coordinates = [
             [origen.lng, origen.lat],
             [destino.lng, destino.lat]
         ];
+        
+        console.log('Coordenadas para ORS:', coordinates);
         
         // Configurar la petición
         const url = `${ORS_BASE_URL}/directions/${modo}`;
@@ -46,21 +53,52 @@ async function obtenerRuta(origen, destino, modo) {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
         };
+        
+        // CAMBIO CRÍTICO: usar format: 'geojson' en lugar de 'json'
         const data = {
             coordinates,
-            format: 'geojson', // Para obtener la geometría en formato GeoJSON
+            format: 'geojson', // 🔥 ESTO ES LO IMPORTANTE - cambiado de 'json' a 'geojson'
             instructions: true,
             language: 'es',
             units: 'km'
         };
         
+        console.log('URL:', url);
+        console.log('Data enviada:', JSON.stringify(data, null, 2));
+        
         // Realizar la petición
         const response = await axios.post(url, data, { headers });
         
+        console.log('✅ OpenRouteService respondió exitosamente');
+        console.log('Estructura de respuesta:', Object.keys(response.data));
+        
+        // Con format: 'geojson', la respuesta tendrá estructura diferente
+        if (response.data.features && response.data.features.length > 0) {
+            console.log('✅ Formato GeoJSON detectado');
+            const feature = response.data.features[0];
+            console.log('Geometry type:', feature.geometry.type);
+            console.log('Coordinates length:', feature.geometry.coordinates.length);
+            console.log('Primeras 3 coordenadas:', feature.geometry.coordinates.slice(0, 3));
+            
+            // Convertir a formato compatible con el resto del código
+            const rutaCompatible = {
+                routes: [{
+                    geometry: feature.geometry, // Coordenadas decodificadas
+                    summary: feature.properties.summary,
+                    bbox: response.data.bbox,
+                    segments: feature.properties.segments || []
+                }]
+            };
+            
+            console.log('✅ Ruta convertida a formato compatible');
+            return rutaCompatible;
+        }
+        
         return response.data;
     } catch (error) {
-        console.error('Error al obtener ruta desde OpenRouteService:', error.message);
+        console.error('❌ Error al obtener ruta desde OpenRouteService:', error.message);
         if (error.response) {
+            console.error('Status:', error.response.status);
             console.error('Detalles del error:', error.response.data);
         }
         throw error;
@@ -91,7 +129,7 @@ async function obtenerRutasAlternativas(origen, destino, modo) {
         };
         const data = {
             coordinates,
-            format: 'geojson',
+            format: 'geojson', // 🔥 CAMBIO: usar geojson
             instructions: true,
             language: 'es',
             units: 'km',
@@ -104,6 +142,19 @@ async function obtenerRutasAlternativas(origen, destino, modo) {
         
         // Realizar la petición
         const response = await axios.post(url, data, { headers });
+        
+        // Convertir formato GeoJSON a formato compatible
+        if (response.data.features && response.data.features.length > 0) {
+            const rutasCompatibles = {
+                routes: response.data.features.map(feature => ({
+                    geometry: feature.geometry,
+                    summary: feature.properties.summary,
+                    bbox: response.data.bbox,
+                    segments: feature.properties.segments || []
+                }))
+            };
+            return rutasCompatibles;
+        }
         
         return response.data;
     } catch (error) {

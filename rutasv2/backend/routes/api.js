@@ -9,7 +9,7 @@ const router = express.Router();
 const db = require('../db/db');
 
 // Token de acceso a OpenRouteService (se recomienda usar variables de entorno)
-const ORS_API_KEY = process.env.OPENROUTE_API_KEY || '5b3ce3597851110001cf62485bae0162dc5e4090a9353097b62bb6ae';
+const ORS_API_KEY = process.env.OPENROUTE_API_KEY || '5b3ce3597851110001cf624800c75ecee995871d6444db4f917adebc41cc19a473cc7fe50f0a56c2';
 const ORS_BASE_URL = 'https://api.openrouteservice.org/v2';
 
 /**
@@ -139,6 +139,7 @@ router.post('/rutas-seguras', async (req, res) => {
                 descripcion: p.descripcion,
                 lat: p.lat,
                 lng: p.lng,
+                contacto: p.contacto,
                 distancia: Math.round(p.distancia)
             })),
             ...puntosCercanos.incidentes.map(i => ({

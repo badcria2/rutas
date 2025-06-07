@@ -17,6 +17,7 @@ function formatearPuntosSeguridad(puntosCercanos) {
             descripcion: p.descripcion,
             lat: p.lat,
             lng: p.lng,
+            contacto: p.contacto,
             distancia: Math.round(p.distancia)
         })),
         ...puntosCercanos.incidentes.map(i => ({
@@ -30,6 +31,87 @@ function formatearPuntosSeguridad(puntosCercanos) {
             fecha: i.fecha
         }))
     ];
+}
+
+/**
+ * Calcula los bounds (límites) para un array de coordenadas
+ * @param {Array} coordinates - Array de coordenadas [lng, lat]
+ * @returns {Array} - Bounds en formato [minLng, minLat, maxLng, maxLat]
+ */
+function calcularBounds(coordinates) {
+    if (!coordinates || coordinates.length === 0) {
+        return [0, 0, 0, 0];
+    }
+    
+    let minLng = coordinates[0][0];
+    let maxLng = coordinates[0][0];
+    let minLat = coordinates[0][1];
+    let maxLat = coordinates[0][1];
+    
+    coordinates.forEach(coord => {
+        minLng = Math.min(minLng, coord[0]);
+        maxLng = Math.max(maxLng, coord[0]);
+        minLat = Math.min(minLat, coord[1]);
+        maxLat = Math.max(maxLat, coord[1]);
+    });
+    
+    return [minLng, minLat, maxLng, maxLat];
+}
+
+/**
+ * Decodifica un polyline string a coordenadas [lng, lat]
+ * Basado en el algoritmo de Google Polyline
+ * @param {string} encoded - String polyline codificado
+ * @returns {Array} - Array de coordenadas [[lng, lat], [lng, lat], ...]
+ */
+function decodificarPolyline(encoded) {
+    if (!encoded || typeof encoded !== 'string') {
+        console.error('Polyline inválido:', encoded);
+        return [];
+    }
+    
+    console.log('🔓 Decodificando polyline de', encoded.length, 'caracteres');
+    
+    const coords = [];
+    let index = 0;
+    let lat = 0;
+    let lng = 0;
+    
+    while (index < encoded.length) {
+        let b, shift = 0, result = 0;
+        
+        // Decodificar latitud
+        do {
+            b = encoded.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+        
+        const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lat += dlat;
+        
+        shift = 0;
+        result = 0;
+        
+        // Decodificar longitud
+        do {
+            b = encoded.charCodeAt(index++) - 63;
+            result |= (b & 0x1f) << shift;
+            shift += 5;
+        } while (b >= 0x20);
+        
+        const dlng = ((result & 1) ? ~(result >> 1) : (result >> 1));
+        lng += dlng;
+        
+        // Convertir a coordenadas decimales y agregar al array
+        // OpenRouteService usa precisión de 5 decimales
+        coords.push([lng / 100000.0, lat / 100000.0]);
+    }
+    
+    console.log('✅ Polyline decodificado:', coords.length, 'coordenadas');
+    console.log('Primeras 3 coordenadas:', coords.slice(0, 3));
+    
+    return coords;
 }
 
 /**
@@ -86,78 +168,159 @@ function crearRutaSimulada(origen, destino, modo) {
 }
 
 /**
- * Obtiene una ruta visual entre dos puntos (real o simulada)
- * @param {Object} origen - Punto de origen {lat, lng}
- * @param {Object} destino - Punto de destino {lat, lng}
- * @param {string} modo - Modo de transporte
- * @returns {Object} - Ruta para visualización con puntos de seguridad
- */
-async function obtenerRutaVisual(origen, destino, modo) {
-    // Intentar obtener una ruta desde OpenRouteService
-    let rutaVisual;
-    try {
-        // Intentar obtener una ruta real
-        const rutaData = await openRouteService.obtenerRuta(origen, destino, modo);
-        if (rutaData && rutaData.routes && rutaData.routes.length > 0) {
-            rutaVisual = prepararRutaVisual(rutaData.routes[0]);
-        } else {
-            throw new Error('No se pudo obtener una ruta válida de OpenRouteService');
-        }
-    } catch (error) {
-        // Si falla, generar una ruta simulada para visualización
-        console.log('Usando ruta simulada para visualización', error.message);
-        rutaVisual = generarRutaVisualSimulada(origen, destino, modo);
-    }
-    
-    // Obtener puntos de seguridad e incidentes cercanos a la ruta
-    const coordenadas = rutaVisual.bounds;
-    const puntosCercanos = await db.getPuntosEnRuta(coordenadas, 300);
-    
-    // Calcular índice de seguridad de la ruta
-    const seguridadScore = await db.calcularIndiceSeguridad(coordenadas);
-    
-    // Formatear los puntos de seguridad para la respuesta
-    const puntosSeguridad = formatearPuntosSeguridad(puntosCercanos);
-    
-    // Añadir el índice de seguridad a la ruta
-    rutaVisual.seguridadScore = seguridadScore;
-    
-    // Devolver ruta y puntos de seguridad
-    return {
-        ruta: rutaVisual,
-        puntosSeguridad
-    };
-}
-
-/**
  * Prepara una ruta de OpenRouteService para visualización
- * @param {Object} ruta - Ruta obtenida de OpenRouteService
- * @returns {Object} - Ruta procesada para visualización
+ * VERSIÓN CORREGIDA que maneja polylines codificados
+ * @param {Object} ruta - Ruta obtenida del servicio
+ * @returns {Object} - Ruta procesada para visualización en formato consistente
  */
 function prepararRutaVisual(ruta) {
-    // Extraer las coordenadas de la ruta
-    const coordenadas = routeUtils.decodificarPolyline(ruta.geometry);
-
-    // Extraer propiedades importantes
-    const distancia = ruta.summary.distance;
-    const duracion = ruta.summary.duration;
+    console.log('=== PREPARANDO RUTA VISUAL ===');
+    console.log('Estructura de ruta recibida:', Object.keys(ruta));
+    console.log('Tipo de geometría:', typeof ruta.geometry);
     
-    // Devolver el objeto de ruta visual
-    return {
-        tipo: 'FeatureCollection',
-        propiedades: {
-            distancia: distancia,
-            duracion: duracion
-        },
+    let coordenadas;
+    
+    // Manejar diferentes formatos de geometry
+    if (typeof ruta.geometry === 'string') {
+        console.log('🔓 Geometry es string codificado - decodificando...');
+        coordenadas = decodificarPolyline(ruta.geometry);
+    } else if (ruta.geometry?.coordinates) {
+        console.log('✅ Geometry ya tiene coordenadas decodificadas');
+        coordenadas = ruta.geometry.coordinates;
+    } else {
+        console.error('❌ Formato de geometry desconocido:', ruta.geometry);
+        throw new Error('Formato de geometry inválido');
+    }
+    
+    // Verificar que las coordenadas existen y son válidas
+    if (!coordenadas || !Array.isArray(coordenadas) || coordenadas.length === 0) {
+        console.error('❌ Coordenadas de ruta inválidas:', coordenadas);
+        throw new Error('Coordenadas de ruta inválidas');
+    }
+    
+    console.log('✅ Coordenadas válidas encontradas:', coordenadas.length);
+    console.log('Primeras 3 coordenadas:', coordenadas.slice(0, 3));
+    
+    // Extraer propiedades importantes
+    const distancia = ruta.summary?.distance || 0;
+    const duracion = ruta.summary?.duration || 0;
+    
+    console.log('Distancia:', distancia, 'km');
+    console.log('Duración:', duracion, 'segundos');
+    
+    // Calcular bounds si no están disponibles
+    const bounds = ruta.bbox || calcularBounds(coordenadas);
+    console.log('Bounds calculados:', bounds);
+    
+    // Crear el objeto de ruta visual en formato consistente
+    const rutaVisual = {
+        // Formato para el frontend (caracteristicas)
         caracteristicas: [{
             tipo: 'Feature',
             geometria: {
                 tipo: 'LineString',
-                coordenadas: coordenadas
+                coordenadas: coordenadas // [lng, lat] formato del servicio
             }
         }],
-        bounds: ruta.bbox
+        propiedades: {
+            distancia: distancia * 1000, // Convertir de km a metros
+            duracion: duracion
+        },
+        bounds: bounds,
+        // También incluir el formato original para compatibilidad
+        geometry: {
+            type: 'LineString',
+            coordinates: coordenadas
+        },
+        summary: {
+            distance: distancia * 1000, // Convertir de km a metros
+            duration: duracion
+        }
     };
+    
+    console.log('✅ Ruta visual preparada exitosamente');
+    console.log('Coordenadas en caracteristicas:', rutaVisual.caracteristicas[0].geometria.coordenadas.length);
+    
+    return rutaVisual;
+}
+
+/**
+ * Obtiene una ruta visual entre dos puntos (real o simulada)
+ * VERSIÓN CORREGIDA con decodificación de polyline
+ */
+async function obtenerRutaVisual(origen, destino, modo) {
+    console.log('=== INICIANDO OBTENER RUTA VISUAL ===');
+    console.log('Coordenadas:', { origen, destino, modo });
+    
+    // Intentar obtener una ruta desde OpenRouteService
+    let rutaData;
+    try {
+        console.log('🔄 Intentando obtener ruta real...');
+        rutaData = await openRouteService.obtenerRuta(origen, destino, modo);
+        
+        console.log('📡 Respuesta del servicio recibida');
+        console.log('Tiene routes:', !!rutaData?.routes);
+        console.log('Número de routes:', rutaData?.routes?.length);
+        
+        if (!rutaData || !rutaData.routes || rutaData.routes.length === 0) {
+            throw new Error('No se encontraron rutas válidas en la respuesta');
+        }
+        
+        console.log('✅ Ruta obtenida exitosamente del servicio');
+    } catch (error) {
+        console.log('❌ Servicio falló, usando ruta simulada:', error.message);
+        return crearRutaSimulada(origen, destino, modo);
+    }
+    
+    // Usar la primera ruta
+    const rutaPrincipal = rutaData.routes[0];
+    console.log('📊 Analizando ruta principal');
+    console.log('Tiene geometry:', !!rutaPrincipal.geometry);
+    console.log('Tipo de geometry:', typeof rutaPrincipal.geometry);
+    
+    // Verificar que la ruta tenga geometría
+    if (!rutaPrincipal.geometry) {
+        console.log('❌ Ruta sin geometría, usando simulación');
+        return crearRutaSimulada(origen, destino, modo);
+    }
+    
+    try {
+        // Preparar la ruta para visualización usando el formato estándar
+        console.log('🔧 Preparando ruta para visualización...');
+        const rutaVisual = prepararRutaVisual(rutaPrincipal);
+        
+        // Obtener puntos de seguridad e incidentes cercanos a la ruta
+        const bounds = rutaPrincipal.bbox || calcularBounds(rutaVisual.geometry.coordinates);
+        const puntosCercanos = await db.getPuntosEnRuta(bounds, 300);
+        
+        // Calcular índice de seguridad de la ruta
+        const seguridadScore = await db.calcularIndiceSeguridad(bounds);
+        
+        // Formatear los puntos de seguridad para la respuesta
+        const puntosSeguridad = formatearPuntosSeguridad(puntosCercanos);
+        
+        // Añadir el índice de seguridad a la ruta
+        rutaVisual.seguridadScore = seguridadScore;
+        
+        console.log('✅ Ruta visual preparada exitosamente');
+        console.log('📋 Resumen final:', {
+            coordenadasEnGeometry: rutaVisual.geometry?.coordinates?.length,
+            coordenadasEnCaracteristicas: rutaVisual.caracteristicas?.[0]?.geometria?.coordenadas?.length,
+            distancia: rutaVisual.propiedades?.distancia,
+            duracion: rutaVisual.propiedades?.duracion,
+            seguridadScore: rutaVisual.seguridadScore,
+            numPuntosSeguridad: puntosSeguridad.length
+        });
+        
+        // Devolver ruta y puntos de seguridad
+        return {
+            ruta: rutaVisual,
+            puntosSeguridad
+        };
+    } catch (error) {
+        console.error('❌ Error al preparar ruta visual:', error);
+        return crearRutaSimulada(origen, destino, modo);
+    }
 }
 
 /**
@@ -213,5 +376,7 @@ module.exports = {
     crearRutaSimulada,
     obtenerRutaVisual,
     prepararRutaVisual,
-    generarRutaVisualSimulada
+    generarRutaVisualSimulada,
+    calcularBounds,
+    decodificarPolyline
 };
